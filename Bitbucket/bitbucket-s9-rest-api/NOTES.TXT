@@ -1,0 +1,39 @@
+# Auth
+# Custom library for centralized auth
+# ~/perl5/lib/perl5/BB_REST_AUTH.pm
+
+
+
+I suspect a recent update to SSL settings has screwed up my ability to connect to bitbucket:
+
+Error: Return code is : 500
+Header: Content-Type=text/plain
+Header: Client-Date=Thu, 07 Jan 2021 15:47:37 GMT
+Header: Client-Warning=Internal response
+Content: 
+Can't connect to nacl-c001.adm.svale.netledger.com:443
+
+LWP::Protocol::https::Socket: SSL connect attempt failed because of handshake problems error:14004410:SSL routines:CONNECT_CR_SRVR_HELLO:sslv3 alert handshake failure at /System/Library/Perl/Extras/5.18/LWP/Protocol/http.pm line 51.
+
+# So probably LWP cannot negociate a connection. (sslv3)
+# NMAP reports this is available 
+mrex@Phemonoe-MacBook-Pro:~/bin/bitbucket-s9-rest-api$ nmap --script ssl-enum-ciphers -p 443 nacl-c001.adm.svale.netledger.com
+Starting Nmap 7.80 ( https://nmap.org ) at 2021-01-07 14:37 EST
+Nmap scan report for nacl-c001.adm.svale.netledger.com (10.1.53.229)
+Host is up (0.082s latency).
+
+PORT    STATE SERVICE
+443/tcp open  https
+| ssl-enum-ciphers: 
+|   TLSv1.2: 
+|     ciphers: 
+|       TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 (dh 2048) - A
+|       TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 (dh 2048) - A
+|       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (secp256r1) - A
+|       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (secp256r1) - A
+|     compressors: 
+|       NULL
+|     cipher preference: client
+|_  least strength: A
+
+Nmap done: 1 IP address (1 host up) scanned in 3.34 seconds

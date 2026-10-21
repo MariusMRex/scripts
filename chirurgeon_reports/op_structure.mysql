@@ -1,0 +1,3131 @@
+-- MySQL dump 10.11
+--
+-- Host: mysql.east.org    Database: east_university
+-- ------------------------------------------------------
+-- Server version	5.1.39-log
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Current Database: `east_university`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `east_university` /*!40100 DEFAULT CHARACTER SET latin1 */;
+
+USE `east_university`;
+
+--
+-- Table structure for table `announcement`
+--
+
+DROP TABLE IF EXISTS `announcement`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `announcement` (
+  `announcement_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_date` date NOT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `announcement` text NOT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`announcement_id`),
+  KEY `FK_announcement__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_announcement__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `chancellor`
+--
+
+DROP TABLE IF EXISTS `chancellor`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `chancellor` (
+  `chancellor_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `participant_id` mediumint(8) unsigned NOT NULL,
+  `start_university_id` mediumint(8) unsigned DEFAULT NULL,
+  `end_university_id` mediumint(8) unsigned DEFAULT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`chancellor_id`),
+  KEY `FK_chancellor__last_edited` (`last_updated_by`),
+  KEY `FK_chancellor__participant` (`participant_id`),
+  KEY `FK_chancellor__university_end` (`end_university_id`),
+  KEY `FK_chancellor__university_start` (`start_university_id`),
+  CONSTRAINT `FK_chancellor__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_chancellor__participant` FOREIGN KEY (`participant_id`) REFERENCES `participant` (`participant_id`),
+  CONSTRAINT `FK_chancellor__university_end` FOREIGN KEY (`end_university_id`) REFERENCES `university` (`university_id`),
+  CONSTRAINT `FK_chancellor__university_start` FOREIGN KEY (`start_university_id`) REFERENCES `university` (`university_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `course`
+--
+
+DROP TABLE IF EXISTS `course`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `course` (
+  `course_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `university_id` mediumint(8) unsigned NOT NULL,
+  `title` varchar(100) NOT NULL,
+  `description` text,
+  `course_number` varchar(20) DEFAULT NULL,
+  `course_code` varchar(30) DEFAULT NULL,
+  `start_time` time DEFAULT NULL,
+  `end_time` time DEFAULT NULL,
+  `hours` tinyint(3) unsigned DEFAULT NULL,
+  `credits` tinyint(3) unsigned DEFAULT NULL,
+  `capacity` tinyint(3) unsigned DEFAULT NULL,
+  `cost` decimal(4,2) DEFAULT NULL,
+  `requirements` varchar(100) DEFAULT NULL,
+  `changes` varchar(100) DEFAULT NULL,
+  `comments` text,
+  `room_id` mediumint(8) unsigned DEFAULT NULL,
+  `course_category_id` mediumint(8) unsigned DEFAULT NULL,
+  `course_track_id` mediumint(8) unsigned DEFAULT NULL,
+  `course_status_id` mediumint(8) unsigned NOT NULL,
+  `old_course_id` mediumint(8) unsigned DEFAULT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  `pages_class` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`course_id`),
+  KEY `FK_course__course_category` (`course_category_id`),
+  KEY `FK_course__course_status` (`course_status_id`),
+  KEY `FK_course__course_track` (`course_track_id`),
+  KEY `FK_course__last_edited` (`last_updated_by`),
+  KEY `FK_course__room` (`room_id`),
+  KEY `FK_course__university` (`university_id`),
+  CONSTRAINT `FK_course__course_category` FOREIGN KEY (`course_category_id`) REFERENCES `course_category` (`course_category_id`),
+  CONSTRAINT `FK_course__course_status` FOREIGN KEY (`course_status_id`) REFERENCES `course_status` (`course_status_id`),
+  CONSTRAINT `FK_course__course_track` FOREIGN KEY (`course_track_id`) REFERENCES `course_track` (`course_track_id`),
+  CONSTRAINT `FK_course__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_course__room` FOREIGN KEY (`room_id`) REFERENCES `room` (`room_id`),
+  CONSTRAINT `FK_course__university` FOREIGN KEY (`university_id`) REFERENCES `university` (`university_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5073 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `course_category`
+--
+
+DROP TABLE IF EXISTS `course_category`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `course_category` (
+  `course_category_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `course_category` varchar(30) NOT NULL,
+  `course_category_code` varchar(2) NOT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`course_category_id`),
+  KEY `FK_course_category__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_course_category__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `course_status`
+--
+
+DROP TABLE IF EXISTS `course_status`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `course_status` (
+  `course_status_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `course_status` varchar(30) NOT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`course_status_id`),
+  KEY `FK_course_status__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_course_status__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `course_track`
+--
+
+DROP TABLE IF EXISTS `course_track`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `course_track` (
+  `course_track_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `course_track` varchar(50) NOT NULL,
+  `university_id` mediumint(8) unsigned NOT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`course_track_id`),
+  KEY `FK_course_track__last_edited` (`last_updated_by`),
+  KEY `FK_course_track__university` (`university_id`),
+  CONSTRAINT `FK_course_track__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_course_track__university` FOREIGN KEY (`university_id`) REFERENCES `university` (`university_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `degree_status`
+--
+
+DROP TABLE IF EXISTS `degree_status`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `degree_status` (
+  `degree_status_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `degree_status` varchar(30) NOT NULL,
+  `degree_status_code` char(1) NOT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`degree_status_id`),
+  KEY `FK_degree_status__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_degree_status__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `participant`
+--
+
+DROP TABLE IF EXISTS `participant`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `participant` (
+  `participant_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `university_participant_id` mediumint(8) unsigned DEFAULT NULL,
+  `university_participant_id2` mediumint(8) unsigned DEFAULT NULL,
+  `user_id` mediumint(8) unsigned DEFAULT NULL,
+  `eastern_id` mediumint(8) unsigned DEFAULT NULL,
+  `sca_name` varchar(255) DEFAULT NULL,
+  `last_university_id` mediumint(8) unsigned DEFAULT NULL,
+  `b_old_university_id` mediumint(8) unsigned DEFAULT NULL,
+  `b_old_degree_status_id` mediumint(8) unsigned DEFAULT NULL,
+  `b_university_id` mediumint(8) unsigned DEFAULT NULL,
+  `b_degree_status_id` mediumint(8) unsigned DEFAULT NULL,
+  `f_university_id` mediumint(8) unsigned DEFAULT NULL,
+  `f_degree_status_id` mediumint(8) unsigned DEFAULT NULL,
+  `m_university_id` mediumint(8) unsigned DEFAULT NULL,
+  `m_degree_status_id` mediumint(8) unsigned DEFAULT NULL,
+  `d_university_id` mediumint(8) unsigned DEFAULT NULL,
+  `d_degree_status_id` mediumint(8) unsigned DEFAULT NULL,
+  `total_university_classes_taken` smallint(6) NOT NULL DEFAULT '0',
+  `total_university_classes_taught` smallint(6) NOT NULL DEFAULT '0',
+  `total_university_credits_taken` smallint(6) NOT NULL DEFAULT '0',
+  `total_university_credits_taught` smallint(6) NOT NULL DEFAULT '0',
+  `total_collegium_classes_taken` smallint(6) NOT NULL DEFAULT '0',
+  `total_collegium_classes_taught` smallint(6) NOT NULL DEFAULT '0',
+  `total_collegium_credits_taken` smallint(6) NOT NULL DEFAULT '0',
+  `total_collegium_credits_taught` smallint(6) NOT NULL DEFAULT '0',
+  `total_university_classes` smallint(6) NOT NULL DEFAULT '0',
+  `total_university_credits` smallint(6) NOT NULL DEFAULT '0',
+  `total_collegium_classes` smallint(6) NOT NULL DEFAULT '0',
+  `total_collegium_credits` smallint(6) NOT NULL DEFAULT '0',
+  `total_classes` smallint(6) NOT NULL DEFAULT '0',
+  `total_credits` smallint(6) NOT NULL DEFAULT '0',
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`participant_id`),
+  UNIQUE KEY `UK_participant_user` (`user_id`),
+  UNIQUE KEY `UK_participant_eastern` (`eastern_id`),
+  KEY `sca_name` (`sca_name`),
+  KEY `FK_participant__degree_status_b` (`b_degree_status_id`),
+  KEY `FK_participant__degree_status_b_old` (`b_old_degree_status_id`),
+  KEY `FK_participant__degree_status_d` (`d_degree_status_id`),
+  KEY `FK_participant__degree_status_f` (`f_degree_status_id`),
+  KEY `FK_participant__degree_status_m` (`m_degree_status_id`),
+  KEY `FK_participant__last_edited` (`last_updated_by`),
+  KEY `FK_participant__university_b` (`b_university_id`),
+  KEY `FK_participant__university_b_old` (`b_old_university_id`),
+  KEY `FK_participant__university_d` (`d_university_id`),
+  KEY `FK_participant__university_f` (`f_university_id`),
+  KEY `FK_participant__university_last` (`last_university_id`),
+  KEY `FK_participant__university_m` (`m_university_id`),
+  CONSTRAINT `FK_participant__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_participant__degree_status_b` FOREIGN KEY (`b_degree_status_id`) REFERENCES `degree_status` (`degree_status_id`),
+  CONSTRAINT `FK_participant__degree_status_b_old` FOREIGN KEY (`b_old_degree_status_id`) REFERENCES `degree_status` (`degree_status_id`),
+  CONSTRAINT `FK_participant__degree_status_d` FOREIGN KEY (`d_degree_status_id`) REFERENCES `degree_status` (`degree_status_id`),
+  CONSTRAINT `FK_participant__degree_status_f` FOREIGN KEY (`f_degree_status_id`) REFERENCES `degree_status` (`degree_status_id`),
+  CONSTRAINT `FK_participant__degree_status_m` FOREIGN KEY (`m_degree_status_id`) REFERENCES `degree_status` (`degree_status_id`),
+  CONSTRAINT `FK_participant__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_participant__university_b` FOREIGN KEY (`b_university_id`) REFERENCES `university` (`university_id`),
+  CONSTRAINT `FK_participant__university_b_old` FOREIGN KEY (`b_old_university_id`) REFERENCES `university` (`university_id`),
+  CONSTRAINT `FK_participant__university_d` FOREIGN KEY (`d_university_id`) REFERENCES `university` (`university_id`),
+  CONSTRAINT `FK_participant__university_f` FOREIGN KEY (`f_university_id`) REFERENCES `university` (`university_id`),
+  CONSTRAINT `FK_participant__university_last` FOREIGN KEY (`last_university_id`) REFERENCES `university` (`university_id`),
+  CONSTRAINT `FK_participant__university_m` FOREIGN KEY (`m_university_id`) REFERENCES `university` (`university_id`),
+  CONSTRAINT `FK_participant__user` FOREIGN KEY (`user_id`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5722 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `participant_type`
+--
+
+DROP TABLE IF EXISTS `participant_type`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `participant_type` (
+  `participant_type_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `participant_type` varchar(30) NOT NULL,
+  `participant_type_code` char(1) NOT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`participant_type_id`),
+  KEY `FK_participant_type__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_participant_type__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `registration`
+--
+
+DROP TABLE IF EXISTS `registration`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `registration` (
+  `registration_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `course_id` mediumint(8) unsigned NOT NULL,
+  `participant_id` mediumint(8) unsigned NOT NULL,
+  `participant_type_id` mediumint(8) unsigned NOT NULL,
+  `registration_status_id` mediumint(8) unsigned NOT NULL,
+  `old_registration_id` mediumint(8) unsigned DEFAULT NULL,
+  `old_registration_id2` mediumint(8) unsigned DEFAULT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`registration_id`),
+  UNIQUE KEY `UK_registration_course_participant` (`participant_id`,`course_id`),
+  KEY `FK_registration__course` (`course_id`),
+  KEY `FK_registration__last_edited` (`last_updated_by`),
+  KEY `FK_registration__participant_type` (`participant_type_id`),
+  KEY `FK_registration__registration_status` (`registration_status_id`),
+  CONSTRAINT `FK_registration__course` FOREIGN KEY (`course_id`) REFERENCES `course` (`course_id`),
+  CONSTRAINT `FK_registration__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_registration__participant` FOREIGN KEY (`participant_id`) REFERENCES `participant` (`participant_id`),
+  CONSTRAINT `FK_registration__participant_type` FOREIGN KEY (`participant_type_id`) REFERENCES `participant_type` (`participant_type_id`),
+  CONSTRAINT `FK_registration__registration_status` FOREIGN KEY (`registration_status_id`) REFERENCES `registration_status` (`registration_status_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=52014 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `registration_status`
+--
+
+DROP TABLE IF EXISTS `registration_status`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `registration_status` (
+  `registration_status_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `registration_status` varchar(30) NOT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`registration_status_id`),
+  KEY `FK_registration_status__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_registration_status__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `room`
+--
+
+DROP TABLE IF EXISTS `room`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `room` (
+  `room_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `room` varchar(10) NOT NULL,
+  `university_id` mediumint(8) unsigned NOT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`room_id`),
+  KEY `FK_room__last_edited` (`last_updated_by`),
+  KEY `FK_room__university` (`university_id`),
+  CONSTRAINT `FK_room__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_room__university` FOREIGN KEY (`university_id`) REFERENCES `university` (`university_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=87 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `university`
+--
+
+DROP TABLE IF EXISTS `university`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `university` (
+  `university_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `branch_id` mediumint(8) unsigned DEFAULT NULL,
+  `university_date` date DEFAULT NULL,
+  `university_code` varchar(10) NOT NULL,
+  `is_university` tinyint(4) NOT NULL DEFAULT '1',
+  `track_proposal_date` date DEFAULT NULL,
+  `individual_proposal_date` date DEFAULT NULL,
+  `publish_date` date DEFAULT NULL,
+  `closed_date` date DEFAULT NULL,
+  `total_students` smallint(6) DEFAULT NULL,
+  `total_teachers` smallint(6) DEFAULT NULL,
+  `total_attendees` smallint(6) DEFAULT NULL,
+  `total_newcomers` smallint(6) DEFAULT NULL,
+  `total_classes` smallint(6) DEFAULT NULL,
+  `event_id` varchar(8) DEFAULT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  `open_date` date DEFAULT NULL,
+  PRIMARY KEY (`university_id`),
+  UNIQUE KEY `UK_university_code` (`university_code`),
+  KEY `university_date` (`university_date`),
+  KEY `FK_university__branch` (`branch_id`),
+  KEY `FK_university__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_university__branch` FOREIGN KEY (`branch_id`) REFERENCES `east_branch`.`branch` (`branch_id`),
+  CONSTRAINT `FK_university__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `university_statistics`
+--
+
+DROP TABLE IF EXISTS `university_statistics`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `university_statistics` (
+  `university_statistics_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `university_id` mediumint(8) unsigned NOT NULL,
+  `course_category_id` mediumint(8) unsigned DEFAULT NULL,
+  `total_classes` smallint(6) DEFAULT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`university_statistics_id`),
+  KEY `FK_university_statistics__last_edited` (`last_updated_by`),
+  KEY `FK_university_statistics__course_category` (`course_category_id`),
+  KEY `FK_university_statistics__university` (`university_id`),
+  CONSTRAINT `FK_university_statistics__course_category` FOREIGN KEY (`course_category_id`) REFERENCES `course_category` (`course_category_id`),
+  CONSTRAINT `FK_university_statistics__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_university_statistics__university` FOREIGN KEY (`university_id`) REFERENCES `university` (`university_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=78635 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Current Database: `east_regnum`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `east_regnum` /*!40100 DEFAULT CHARACTER SET latin1 */;
+
+USE `east_regnum`;
+
+--
+-- Table structure for table `auth`
+--
+
+DROP TABLE IF EXISTS `auth`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `auth` (
+  `user` varchar(20) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `pass` varchar(16) CHARACTER SET latin1 DEFAULT NULL,
+  `last_log` varchar(16) CHARACTER SET latin1 DEFAULT NULL,
+  `client_ip` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `aflag` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `baronage`
+--
+
+DROP TABLE IF EXISTS `baronage`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `baronage` (
+  `gname` varchar(70) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `title` varchar(10) CHARACTER SET latin1 DEFAULT NULL,
+  `sname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `mname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `addr` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `city` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `state` char(2) CHARACTER SET latin1 DEFAULT NULL,
+  `zip` varchar(5) CHARACTER SET latin1 DEFAULT NULL,
+  `phone` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `nlt` varchar(10) CHARACTER SET latin1 DEFAULT NULL,
+  `email` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `website` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `mpriv` tinyint(4) NOT NULL DEFAULT '1',
+  `apriv` tinyint(4) NOT NULL DEFAULT '1',
+  `ppriv` tinyint(4) NOT NULL DEFAULT '1',
+  `epriv` tinyint(4) NOT NULL DEFAULT '1',
+  `mem` int(11) DEFAULT NULL,
+  `mem_exp` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `start_date` date DEFAULT NULL,
+  `term_end_date` date DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `chatelaine`
+--
+
+DROP TABLE IF EXISTS `chatelaine`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `chatelaine` (
+  `gname` varchar(70) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `sname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `mname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `addr` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `city` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `state` char(2) CHARACTER SET latin1 DEFAULT NULL,
+  `zip` varchar(5) CHARACTER SET latin1 DEFAULT NULL,
+  `phone` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `email` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `mem` int(11) DEFAULT NULL,
+  `mem_exp` varchar(8) CHARACTER SET latin1 DEFAULT NULL,
+  `epriv` tinyint(4) DEFAULT '0',
+  `ppriv` tinyint(4) DEFAULT '0',
+  `apriv` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`gname`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `goofs`
+--
+
+DROP TABLE IF EXISTS `goofs`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `goofs` (
+  `office` varchar(70) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `parent` varchar(20) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `child` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `title` varchar(70) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `deputy` tinyint(4) DEFAULT '0',
+  `honorific` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `sname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `mname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `addr` varchar(120) CHARACTER SET latin1 DEFAULT NULL,
+  `city` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `state` char(2) CHARACTER SET latin1 DEFAULT NULL,
+  `zip` varchar(5) CHARACTER SET latin1 DEFAULT NULL,
+  `phone` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `nlt` varchar(10) CHARACTER SET latin1 DEFAULT NULL,
+  `email` varchar(120) CHARACTER SET latin1 DEFAULT NULL,
+  `website` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `mpriv` tinyint(4) NOT NULL DEFAULT '1',
+  `apriv` tinyint(4) NOT NULL DEFAULT '1',
+  `ppriv` tinyint(4) NOT NULL DEFAULT '1',
+  `epriv` tinyint(4) NOT NULL DEFAULT '1',
+  `vacant` tinyint(4) DEFAULT '0',
+  `disp_order` tinyint(4) DEFAULT NULL,
+  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `mem` int(11) DEFAULT NULL,
+  `mem_exp` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `start_date` date DEFAULT NULL,
+  `term_end_date` date DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=105 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `guild`
+--
+
+DROP TABLE IF EXISTS `guild`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `guild` (
+  `name` varchar(70) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `honorific` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `sname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `mname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `addr` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `city` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `state` char(2) CHARACTER SET latin1 DEFAULT NULL,
+  `zip` varchar(5) CHARACTER SET latin1 DEFAULT NULL,
+  `phone` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `nlt` varchar(10) CHARACTER SET latin1 DEFAULT NULL,
+  `email` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `website` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `elist` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `mpriv` tinyint(4) NOT NULL DEFAULT '1',
+  `apriv` tinyint(4) NOT NULL DEFAULT '1',
+  `ppriv` tinyint(4) NOT NULL DEFAULT '1',
+  `epriv` tinyint(4) NOT NULL DEFAULT '1',
+  `disp_order` tinyint(4) DEFAULT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `mailing_list`
+--
+
+DROP TABLE IF EXISTS `mailing_list`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `mailing_list` (
+  `mailing_list_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `mailing_list_name` varchar(100) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `list_type` varchar(20) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `group_name` varchar(100) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `group_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`mailing_list_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `mailing_list_minister`
+--
+
+DROP TABLE IF EXISTS `mailing_list_minister`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `mailing_list_minister` (
+  `mailing_list_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `web_minister_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `start_date` date DEFAULT NULL,
+  PRIMARY KEY (`mailing_list_id`,`web_minister_id`),
+  KEY `FK_mailing_list_minister__web_minister` (`web_minister_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `notable`
+--
+
+DROP TABLE IF EXISTS `notable`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `notable` (
+  `name` varchar(70) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `honorific` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `sname` varchar(70) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `mname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `addr` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `city` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `state` char(2) CHARACTER SET latin1 DEFAULT NULL,
+  `zip` varchar(5) CHARACTER SET latin1 DEFAULT NULL,
+  `phone` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `nlt` varchar(10) CHARACTER SET latin1 DEFAULT NULL,
+  `email` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `website` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `mpriv` tinyint(4) NOT NULL DEFAULT '1',
+  `apriv` tinyint(4) NOT NULL DEFAULT '1',
+  `ppriv` tinyint(4) NOT NULL DEFAULT '1',
+  `epriv` tinyint(4) NOT NULL DEFAULT '1',
+  `disp_order` tinyint(4) DEFAULT NULL,
+  `notable_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`notable_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `orders`
+--
+
+DROP TABLE IF EXISTS `orders`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `orders` (
+  `name` varchar(70) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `honorific` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `sname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `mname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `addr` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `city` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `state` char(2) CHARACTER SET latin1 DEFAULT NULL,
+  `zip` varchar(5) CHARACTER SET latin1 DEFAULT NULL,
+  `phone` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `nlt` varchar(10) CHARACTER SET latin1 DEFAULT NULL,
+  `email` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `website` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `mpriv` tinyint(4) NOT NULL DEFAULT '1',
+  `apriv` tinyint(4) NOT NULL DEFAULT '1',
+  `ppriv` tinyint(4) NOT NULL DEFAULT '1',
+  `epriv` tinyint(4) NOT NULL DEFAULT '1',
+  `mem` int(11) DEFAULT NULL,
+  `mem_exp` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `start_date` date DEFAULT NULL,
+  `term_end_date` date DEFAULT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `seneschal`
+--
+
+DROP TABLE IF EXISTS `seneschal`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `seneschal` (
+  `gname` varchar(70) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `honorific` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `sname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `mname` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `addr` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `city` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `state` char(2) CHARACTER SET latin1 DEFAULT NULL,
+  `zip` varchar(5) CHARACTER SET latin1 DEFAULT NULL,
+  `phone` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `alt_phone` varchar(15) CHARACTER SET latin1 DEFAULT NULL,
+  `email` varchar(70) CHARACTER SET latin1 DEFAULT NULL,
+  `mem` int(11) DEFAULT NULL,
+  `mem_exp` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `acting` tinyint(4) DEFAULT '0',
+  `mpriv` tinyint(4) NOT NULL DEFAULT '1',
+  `epriv` tinyint(4) NOT NULL DEFAULT '1',
+  `ppriv` tinyint(4) NOT NULL DEFAULT '1',
+  `apriv` tinyint(4) NOT NULL DEFAULT '1',
+  `start_date` date DEFAULT NULL,
+  `term_end_date` date DEFAULT NULL,
+  `group_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`gname`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `web_minister`
+--
+
+DROP TABLE IF EXISTS `web_minister`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `web_minister` (
+  `web_minister_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `first_name` varchar(50) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `last_name` varchar(50) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `address1` varchar(100) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `address2` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `city` varchar(50) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `state` char(2) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `zip` varchar(10) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `email` varchar(100) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `phone_home` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `phone_mobile` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `phone_work` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `phone_time_start` varchar(4) CHARACTER SET latin1 DEFAULT NULL,
+  `phone_time_end` varchar(4) CHARACTER SET latin1 DEFAULT NULL,
+  `sca_name` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `membership_number` mediumint(8) unsigned DEFAULT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `mpriv` tinyint(4) NOT NULL DEFAULT '1',
+  `apriv` tinyint(4) NOT NULL DEFAULT '1',
+  `epriv` tinyint(4) NOT NULL DEFAULT '1',
+  `phpriv` tinyint(4) NOT NULL DEFAULT '1',
+  `pwpriv` tinyint(4) NOT NULL DEFAULT '1',
+  `pmpriv` tinyint(4) NOT NULL DEFAULT '1',
+  `other` text CHARACTER SET latin1,
+  `help` text CHARACTER SET latin1,
+  `comments` text CHARACTER SET latin1,
+  `membership_valid` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`web_minister_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=157 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `web_site`
+--
+
+DROP TABLE IF EXISTS `web_site`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `web_site` (
+  `web_site_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `url` varchar(100) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `site_type` varchar(20) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `group_name` varchar(100) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `group_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`web_site_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=150 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `web_site_minister`
+--
+
+DROP TABLE IF EXISTS `web_site_minister`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `web_site_minister` (
+  `web_site_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `web_minister_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `start_date` date DEFAULT NULL,
+  `role_email` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `deputy` tinyint(4) NOT NULL DEFAULT '0',
+  `seneschal_approved` tinyint(4) DEFAULT NULL,
+  `warranted` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`web_site_id`,`web_minister_id`),
+  KEY `FK_web_site_minister__web_minister` (`web_minister_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `web_skill`
+--
+
+DROP TABLE IF EXISTS `web_skill`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `web_skill` (
+  `web_skill_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `web_minister_id` mediumint(8) unsigned DEFAULT NULL,
+  `skill` varchar(20) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `proficiency` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`web_skill_id`),
+  KEY `FK_web_skill__web_minister` (`web_minister_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3901 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Current Database: `east_order`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `east_order` /*!40100 DEFAULT CHARACTER SET latin1 */;
+
+USE `east_order`;
+
+--
+-- Table structure for table `apprentice`
+--
+
+DROP TABLE IF EXISTS `apprentice`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `apprentice` (
+  `apprentice_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `laurel_id` mediumint(8) unsigned DEFAULT NULL,
+  `laurel` varchar(100) DEFAULT NULL,
+  `apprentice_date` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`apprentice_id`),
+  KEY `FK_apprentice__eastern` (`eastern_id`),
+  KEY `FK_apprentice__last_edited` (`last_updated_by`),
+  KEY `FK_apprentice__laurel` (`laurel_id`),
+  CONSTRAINT `FK_apprentice__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_apprentice__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_apprentice__laurel` FOREIGN KEY (`laurel_id`) REFERENCES `laurel` (`laurel_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `art_science`
+--
+
+DROP TABLE IF EXISTS `art_science`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `art_science` (
+  `art_science_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `art_science` varchar(100) NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`art_science_id`),
+  KEY `art_science` (`art_science`),
+  KEY `FK_art_science__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_art_science__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `chivalry`
+--
+
+DROP TABLE IF EXISTS `chivalry`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `chivalry` (
+  `chivalry_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `eastern_award_id` mediumint(8) unsigned DEFAULT NULL,
+  `award_date` date DEFAULT NULL,
+  `sequence` smallint(6) NOT NULL DEFAULT '0',
+  `reign_id` mediumint(8) unsigned DEFAULT NULL,
+  `monarchs` varchar(200) DEFAULT NULL,
+  `scroll_file_name` varchar(255) DEFAULT NULL,
+  `scroll_scribe` varchar(255) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`chivalry_id`),
+  KEY `award_date` (`award_date`),
+  KEY `FK_chivalry__eastern` (`eastern_id`),
+  KEY `FK_chivalry__eastern_award` (`eastern_award_id`),
+  KEY `FK_chivalry__last_edited` (`last_updated_by`),
+  KEY `FK_chivalry__reign` (`reign_id`),
+  CONSTRAINT `FK_chivalry__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_chivalry__eastern_award` FOREIGN KEY (`eastern_award_id`) REFERENCES `east_op`.`eastern_award` (`eastern_award_id`),
+  CONSTRAINT `FK_chivalry__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_chivalry__reign` FOREIGN KEY (`reign_id`) REFERENCES `east_op`.`reign` (`reign_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=139 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `chivalry_announcement`
+--
+
+DROP TABLE IF EXISTS `chivalry_announcement`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `chivalry_announcement` (
+  `chivalry_announcement_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_date` date NOT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `announcement` text NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`chivalry_announcement_id`),
+  KEY `FK_chivalry_announce__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_chivalry_announce__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `chivalry_faq`
+--
+
+DROP TABLE IF EXISTS `chivalry_faq`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `chivalry_faq` (
+  `chivalry_faq_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `display_order` tinyint(3) unsigned NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` text,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`chivalry_faq_id`),
+  KEY `FK_chivalry_faq__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_chivalry_faq__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `dolphin`
+--
+
+DROP TABLE IF EXISTS `dolphin`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `dolphin` (
+  `dolphin_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `eastern_award_id` mediumint(8) unsigned DEFAULT NULL,
+  `award_date` date DEFAULT NULL,
+  `sequence` smallint(6) NOT NULL DEFAULT '0',
+  `reign_id` mediumint(8) unsigned DEFAULT NULL,
+  `principality_id` mediumint(8) unsigned DEFAULT NULL,
+  `scroll_file_name` varchar(255) DEFAULT NULL,
+  `scroll_scribe` varchar(255) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`dolphin_id`),
+  KEY `FK_dolphin__last_edited` (`last_updated_by`),
+  KEY `award_date` (`award_date`),
+  KEY `FK_dolphin__eastern` (`eastern_id`),
+  KEY `FK_dolphin__eastern_award` (`eastern_award_id`),
+  KEY `FK_dolphin__principality` (`principality_id`),
+  KEY `FK_dolphin__reign` (`reign_id`),
+  CONSTRAINT `FK_dolphin__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_dolphin__eastern_award` FOREIGN KEY (`eastern_award_id`) REFERENCES `east_op`.`eastern_award` (`eastern_award_id`),
+  CONSTRAINT `FK_dolphin__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_dolphin__principality` FOREIGN KEY (`principality_id`) REFERENCES `east_op`.`principality` (`principality_id`),
+  CONSTRAINT `FK_dolphin__reign` FOREIGN KEY (`reign_id`) REFERENCES `east_op`.`reign` (`reign_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=502 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `dolphin_announcement`
+--
+
+DROP TABLE IF EXISTS `dolphin_announcement`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `dolphin_announcement` (
+  `dolphin_announcement_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_date` date NOT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `announcement` text NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`dolphin_announcement_id`),
+  KEY `FK_dolphin_announce__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_dolphin_announce__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `dolphin_faq`
+--
+
+DROP TABLE IF EXISTS `dolphin_faq`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `dolphin_faq` (
+  `dolphin_faq_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `display_order` tinyint(3) unsigned NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` text,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`dolphin_faq_id`),
+  KEY `FK_dolphin_faq__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_dolphin_faq__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `kraken`
+--
+
+DROP TABLE IF EXISTS `kraken`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `kraken` (
+  `kraken_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `eastern_award_id` mediumint(8) unsigned DEFAULT NULL,
+  `award_date` date DEFAULT NULL,
+  `sequence` smallint(6) NOT NULL DEFAULT '0',
+  `reign_id` mediumint(8) unsigned DEFAULT NULL,
+  `principality_id` mediumint(8) unsigned DEFAULT NULL,
+  `scroll_file_name` varchar(255) DEFAULT NULL,
+  `scroll_scribe` varchar(255) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`kraken_id`),
+  KEY `award_date` (`award_date`),
+  KEY `FK_kraken__eastern` (`eastern_id`),
+  KEY `FK_kraken__eastern_award` (`eastern_award_id`),
+  KEY `FK_kraken__last_edited` (`last_updated_by`),
+  KEY `FK_kraken__principality` (`principality_id`),
+  KEY `FK_kraken__reign` (`reign_id`),
+  CONSTRAINT `FK_kraken__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_kraken__eastern_award` FOREIGN KEY (`eastern_award_id`) REFERENCES `east_op`.`eastern_award` (`eastern_award_id`),
+  CONSTRAINT `FK_kraken__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_kraken__principality` FOREIGN KEY (`principality_id`) REFERENCES `east_op`.`principality` (`principality_id`),
+  CONSTRAINT `FK_kraken__reign` FOREIGN KEY (`reign_id`) REFERENCES `east_op`.`reign` (`reign_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `kraken_announcement`
+--
+
+DROP TABLE IF EXISTS `kraken_announcement`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `kraken_announcement` (
+  `kraken_announcement_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_date` date NOT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `announcement` text NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`kraken_announcement_id`),
+  KEY `FK_kraken_announce__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_kraken_announce__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `kraken_faq`
+--
+
+DROP TABLE IF EXISTS `kraken_faq`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `kraken_faq` (
+  `kraken_faq_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `display_order` tinyint(3) unsigned NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` text,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`kraken_faq_id`),
+  KEY `FK_kraken_faq__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_kraken_faq__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `laurel`
+--
+
+DROP TABLE IF EXISTS `laurel`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `laurel` (
+  `laurel_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `eastern_award_id` mediumint(8) unsigned NOT NULL,
+  `award_date` date DEFAULT NULL,
+  `sequence` smallint(6) NOT NULL DEFAULT '0',
+  `reign_id` mediumint(8) unsigned DEFAULT NULL,
+  `monarchs` varchar(200) DEFAULT NULL,
+  `art_science_id_1` mediumint(8) unsigned DEFAULT NULL,
+  `detail_1` text,
+  `art_science_id_2` mediumint(8) unsigned DEFAULT NULL,
+  `detail_2` text,
+  `art_science_id_3` mediumint(8) unsigned DEFAULT NULL,
+  `detail_3` text,
+  `art_science_id_4` mediumint(8) unsigned DEFAULT NULL,
+  `detail_4` text,
+  `art_science_id_5` mediumint(8) unsigned DEFAULT NULL,
+  `detail_5` text,
+  `scroll_file_name` varchar(255) DEFAULT NULL,
+  `scroll_scribe` varchar(255) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`laurel_id`),
+  KEY `award_date` (`award_date`),
+  KEY `FK_laurel__art_science_1` (`art_science_id_1`),
+  KEY `FK_laurel__art_science_2` (`art_science_id_2`),
+  KEY `FK_laurel__art_science_3` (`art_science_id_3`),
+  KEY `FK_laurel__art_science_4` (`art_science_id_4`),
+  KEY `FK_laurel__art_science_5` (`art_science_id_5`),
+  KEY `FK_laurel__eastern` (`eastern_id`),
+  KEY `FK_laurel__eastern_award` (`eastern_award_id`),
+  KEY `FK_laurel__last_edited` (`last_updated_by`),
+  KEY `FK_laurel__reign` (`reign_id`),
+  CONSTRAINT `FK_laurel__art_science_1` FOREIGN KEY (`art_science_id_1`) REFERENCES `art_science` (`art_science_id`),
+  CONSTRAINT `FK_laurel__art_science_2` FOREIGN KEY (`art_science_id_2`) REFERENCES `art_science` (`art_science_id`),
+  CONSTRAINT `FK_laurel__art_science_3` FOREIGN KEY (`art_science_id_3`) REFERENCES `art_science` (`art_science_id`),
+  CONSTRAINT `FK_laurel__art_science_4` FOREIGN KEY (`art_science_id_4`) REFERENCES `art_science` (`art_science_id`),
+  CONSTRAINT `FK_laurel__art_science_5` FOREIGN KEY (`art_science_id_5`) REFERENCES `art_science` (`art_science_id`),
+  CONSTRAINT `FK_laurel__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_laurel__eastern_award` FOREIGN KEY (`eastern_award_id`) REFERENCES `east_op`.`eastern_award` (`eastern_award_id`),
+  CONSTRAINT `FK_laurel__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_laurel__reign` FOREIGN KEY (`reign_id`) REFERENCES `east_op`.`reign` (`reign_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=370 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `laurel_announcement`
+--
+
+DROP TABLE IF EXISTS `laurel_announcement`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `laurel_announcement` (
+  `laurel_announcement_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_date` date NOT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `announcement` text NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`laurel_announcement_id`),
+  KEY `FK_laurel_announce__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_laurel_announce__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `laurel_faq`
+--
+
+DROP TABLE IF EXISTS `laurel_faq`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `laurel_faq` (
+  `laurel_faq_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `display_order` tinyint(3) unsigned NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` text,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`laurel_faq_id`),
+  KEY `FK_laurel_faq__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_laurel_faq__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `pearl`
+--
+
+DROP TABLE IF EXISTS `pearl`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `pearl` (
+  `pearl_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `eastern_award_id` mediumint(8) unsigned DEFAULT NULL,
+  `award_date` date DEFAULT NULL,
+  `sequence` smallint(6) NOT NULL DEFAULT '0',
+  `reign_id` mediumint(8) unsigned DEFAULT NULL,
+  `principality_id` mediumint(8) unsigned DEFAULT NULL,
+  `art_science_id_1` mediumint(8) unsigned DEFAULT NULL,
+  `detail_1` text,
+  `art_science_id_2` mediumint(8) unsigned DEFAULT NULL,
+  `detail_2` text,
+  `art_science_id_3` mediumint(8) unsigned DEFAULT NULL,
+  `detail_3` text,
+  `art_science_id_4` mediumint(8) unsigned DEFAULT NULL,
+  `detail_4` text,
+  `art_science_id_5` mediumint(8) unsigned DEFAULT NULL,
+  `detail_5` text,
+  `scroll_file_name` varchar(255) DEFAULT NULL,
+  `scroll_scribe` varchar(255) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`pearl_id`),
+  KEY `award_date` (`award_date`),
+  KEY `FK_pearl__art_science_1` (`art_science_id_1`),
+  KEY `FK_pearl__art_science_2` (`art_science_id_2`),
+  KEY `FK_pearl__art_science_3` (`art_science_id_3`),
+  KEY `FK_pearl__art_science_4` (`art_science_id_4`),
+  KEY `FK_pearl__art_science_5` (`art_science_id_5`),
+  KEY `FK_pearl__eastern` (`eastern_id`),
+  KEY `FK_pearl__eastern_award` (`eastern_award_id`),
+  KEY `FK_pearl__last_edited` (`last_updated_by`),
+  KEY `FK_pearl__principality` (`principality_id`),
+  KEY `FK_pearl__reign` (`reign_id`),
+  CONSTRAINT `FK_pearl__art_science_1` FOREIGN KEY (`art_science_id_1`) REFERENCES `art_science` (`art_science_id`),
+  CONSTRAINT `FK_pearl__art_science_2` FOREIGN KEY (`art_science_id_2`) REFERENCES `art_science` (`art_science_id`),
+  CONSTRAINT `FK_pearl__art_science_3` FOREIGN KEY (`art_science_id_3`) REFERENCES `art_science` (`art_science_id`),
+  CONSTRAINT `FK_pearl__art_science_4` FOREIGN KEY (`art_science_id_4`) REFERENCES `art_science` (`art_science_id`),
+  CONSTRAINT `FK_pearl__art_science_5` FOREIGN KEY (`art_science_id_5`) REFERENCES `art_science` (`art_science_id`),
+  CONSTRAINT `FK_pearl__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_pearl__eastern_award` FOREIGN KEY (`eastern_award_id`) REFERENCES `east_op`.`eastern_award` (`eastern_award_id`),
+  CONSTRAINT `FK_pearl__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_pearl__principality` FOREIGN KEY (`principality_id`) REFERENCES `east_op`.`principality` (`principality_id`),
+  CONSTRAINT `FK_pearl__reign` FOREIGN KEY (`reign_id`) REFERENCES `east_op`.`reign` (`reign_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=450 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `pearl_announcement`
+--
+
+DROP TABLE IF EXISTS `pearl_announcement`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `pearl_announcement` (
+  `pearl_announcement_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_date` date NOT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `announcement` text NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`pearl_announcement_id`),
+  KEY `FK_pearl_announce__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_pearl_announce__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `pearl_faq`
+--
+
+DROP TABLE IF EXISTS `pearl_faq`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `pearl_faq` (
+  `pearl_faq_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `display_order` tinyint(3) unsigned NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` text,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`pearl_faq_id`),
+  KEY `FK_pearl_faq__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_pearl_faq__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `pelican`
+--
+
+DROP TABLE IF EXISTS `pelican`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `pelican` (
+  `pelican_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `eastern_award_id` mediumint(8) unsigned DEFAULT NULL,
+  `award_date` date DEFAULT NULL,
+  `sequence` smallint(6) NOT NULL DEFAULT '0',
+  `reign_id` mediumint(8) unsigned DEFAULT NULL,
+  `monarchs` varchar(200) DEFAULT NULL,
+  `scroll_file_name` varchar(255) DEFAULT NULL,
+  `scroll_scribe` varchar(255) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`pelican_id`),
+  KEY `award_date` (`award_date`),
+  KEY `FK_pelican__eastern` (`eastern_id`),
+  KEY `FK_pelican__eastern_award` (`eastern_award_id`),
+  KEY `FK_pelican__last_edited` (`last_updated_by`),
+  KEY `FK_pelican__reign` (`reign_id`),
+  CONSTRAINT `FK_pelican__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_pelican__eastern_award` FOREIGN KEY (`eastern_award_id`) REFERENCES `east_op`.`eastern_award` (`eastern_award_id`),
+  CONSTRAINT `FK_pelican__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_pelican__reign` FOREIGN KEY (`reign_id`) REFERENCES `east_op`.`reign` (`reign_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=198 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `pelican_announcement`
+--
+
+DROP TABLE IF EXISTS `pelican_announcement`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `pelican_announcement` (
+  `pelican_announcement_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_date` date NOT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `announcement` text NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`pelican_announcement_id`),
+  KEY `FK_pelican_announce__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_pelican_announce__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `pelican_faq`
+--
+
+DROP TABLE IF EXISTS `pelican_faq`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `pelican_faq` (
+  `pelican_faq_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `display_order` tinyint(3) unsigned NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` text,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`pelican_faq_id`),
+  KEY `FK_pelican_faq__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_pelican_faq__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `polling_order`
+--
+
+DROP TABLE IF EXISTS `polling_order`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `polling_order` (
+  `order_id` mediumint(8) unsigned NOT NULL,
+  `order_name` varchar(50) NOT NULL,
+  `short_name` varchar(20) NOT NULL,
+  `order_description` varchar(50) DEFAULT NULL,
+  `website` varchar(100) DEFAULT NULL,
+  `display_order` mediumint(8) unsigned DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`order_id`),
+  KEY `FK_polling_order__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_polling_order__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `principal`
+--
+
+DROP TABLE IF EXISTS `principal`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `principal` (
+  `principal_id` mediumint(8) unsigned NOT NULL,
+  `order_id` mediumint(8) unsigned NOT NULL,
+  `eastern_id` mediumint(8) unsigned DEFAULT NULL,
+  `start_date` date DEFAULT NULL,
+  `term_end_date` date DEFAULT NULL,
+  `email_alias` varchar(100) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`principal_id`),
+  KEY `FK_principal__eastern` (`eastern_id`),
+  KEY `FK_principal__last_edited` (`last_updated_by`),
+  KEY `FK_principal__order` (`order_id`),
+  CONSTRAINT `FK_principal__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_principal__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_principal__order` FOREIGN KEY (`order_id`) REFERENCES `polling_order` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `protege`
+--
+
+DROP TABLE IF EXISTS `protege`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `protege` (
+  `protege_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `pelican_id` mediumint(8) unsigned DEFAULT NULL,
+  `pelican` varchar(100) DEFAULT NULL,
+  `protege_date` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`protege_id`),
+  KEY `FK_protege__eastern` (`eastern_id`),
+  KEY `FK_protege__last_edited` (`last_updated_by`),
+  KEY `FK_protege__pelican` (`pelican_id`),
+  CONSTRAINT `FK_protege__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_protege__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_protege__pelican` FOREIGN KEY (`pelican_id`) REFERENCES `pelican` (`pelican_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `rose`
+--
+
+DROP TABLE IF EXISTS `rose`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `rose` (
+  `rose_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `eastern_award_id` mediumint(8) unsigned DEFAULT NULL,
+  `award_date` date DEFAULT NULL,
+  `sequence` smallint(6) NOT NULL DEFAULT '0',
+  `reign_id` mediumint(8) unsigned DEFAULT NULL,
+  `monarchs` varchar(200) DEFAULT NULL,
+  `scroll_file_name` varchar(255) DEFAULT NULL,
+  `scroll_scribe` varchar(255) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`rose_id`),
+  KEY `award_date` (`award_date`),
+  KEY `FK_rose__eastern` (`eastern_id`),
+  KEY `FK_rose__eastern_award` (`eastern_award_id`),
+  KEY `FK_rose__last_edited` (`last_updated_by`),
+  KEY `FK_rose__reign` (`reign_id`),
+  CONSTRAINT `FK_rose__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_rose__eastern_award` FOREIGN KEY (`eastern_award_id`) REFERENCES `east_op`.`eastern_award` (`eastern_award_id`),
+  CONSTRAINT `FK_rose__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_rose__reign` FOREIGN KEY (`reign_id`) REFERENCES `east_op`.`reign` (`reign_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `rose_announcement`
+--
+
+DROP TABLE IF EXISTS `rose_announcement`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `rose_announcement` (
+  `rose_announcement_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_date` date NOT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `announcement` text NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`rose_announcement_id`),
+  KEY `FK_rose_announce__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_rose_announce__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `rose_faq`
+--
+
+DROP TABLE IF EXISTS `rose_faq`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `rose_faq` (
+  `rose_faq_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `display_order` tinyint(3) unsigned NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` text,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`rose_faq_id`),
+  KEY `FK_rose_faq__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_rose_faq__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `seastag`
+--
+
+DROP TABLE IF EXISTS `seastag`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `seastag` (
+  `seastag_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `eastern_award_id` mediumint(8) unsigned DEFAULT NULL,
+  `award_date` date DEFAULT NULL,
+  `sequence` smallint(6) NOT NULL DEFAULT '0',
+  `reign_id` mediumint(8) unsigned DEFAULT NULL,
+  `principality_id` mediumint(8) unsigned DEFAULT NULL,
+  `scroll_file_name` varchar(255) DEFAULT NULL,
+  `scroll_scribe` varchar(255) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`seastag_id`),
+  KEY `award_date` (`award_date`),
+  KEY `FK_seastag__eastern` (`eastern_id`),
+  KEY `FK_seastag__eastern_award` (`eastern_award_id`),
+  KEY `FK_seastag__last_edited` (`last_updated_by`),
+  KEY `FK_seastag__principality` (`principality_id`),
+  KEY `FK_seastag__reign` (`reign_id`),
+  CONSTRAINT `FK_seastag__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_seastag__eastern_award` FOREIGN KEY (`eastern_award_id`) REFERENCES `east_op`.`eastern_award` (`eastern_award_id`),
+  CONSTRAINT `FK_seastag__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_seastag__principality` FOREIGN KEY (`principality_id`) REFERENCES `east_op`.`principality` (`principality_id`),
+  CONSTRAINT `FK_seastag__reign` FOREIGN KEY (`reign_id`) REFERENCES `east_op`.`reign` (`reign_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=133 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `seastag_announcement`
+--
+
+DROP TABLE IF EXISTS `seastag_announcement`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `seastag_announcement` (
+  `seastag_announcement_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_date` date NOT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `announcement` text NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`seastag_announcement_id`),
+  KEY `FK_seastag_announce__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_seastag_announce__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `seastag_faq`
+--
+
+DROP TABLE IF EXISTS `seastag_faq`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `seastag_faq` (
+  `seastag_faq_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `display_order` tinyint(3) unsigned NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` text,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`seastag_faq_id`),
+  KEY `FK_seastag_faq__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_seastag_faq__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `squire`
+--
+
+DROP TABLE IF EXISTS `squire`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `squire` (
+  `squire_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `chivalry_id` mediumint(8) unsigned DEFAULT NULL,
+  `chivalry` varchar(100) DEFAULT NULL,
+  `squire_date` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`squire_id`),
+  KEY `FK_squire__eastern` (`eastern_id`),
+  KEY `FK_squire__chivalry` (`chivalry_id`),
+  KEY `FK_squire__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_squire__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_squire__chivalry` FOREIGN KEY (`chivalry_id`) REFERENCES `chivalry` (`chivalry_id`),
+  CONSTRAINT `FK_squire__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `whitescarf`
+--
+
+DROP TABLE IF EXISTS `whitescarf`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `whitescarf` (
+  `whitescarf_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `eastern_award_id` mediumint(8) unsigned DEFAULT NULL,
+  `award_date` date DEFAULT NULL,
+  `sequence` smallint(6) NOT NULL DEFAULT '0',
+  `reign_id` mediumint(8) unsigned DEFAULT NULL,
+  `principality_id` mediumint(8) unsigned DEFAULT NULL,
+  `scroll_file_name` varchar(255) DEFAULT NULL,
+  `scroll_scribe` varchar(255) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`whitescarf_id`),
+  KEY `award_date` (`award_date`),
+  KEY `FK_whitescarf__eastern` (`eastern_id`),
+  KEY `FK_whitescarf__eastern_award` (`eastern_award_id`),
+  KEY `FK_whitescarf__last_edited` (`last_updated_by`),
+  KEY `FK_whitescarf__principality` (`principality_id`),
+  KEY `FK_whitescarf__reign` (`reign_id`),
+  CONSTRAINT `FK_whitescarf__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_whitescarf__eastern_award` FOREIGN KEY (`eastern_award_id`) REFERENCES `east_op`.`eastern_award` (`eastern_award_id`),
+  CONSTRAINT `FK_whitescarf__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_whitescarf__principality` FOREIGN KEY (`principality_id`) REFERENCES `east_op`.`principality` (`principality_id`),
+  CONSTRAINT `FK_whitescarf__reign` FOREIGN KEY (`reign_id`) REFERENCES `east_op`.`reign` (`reign_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `whitescarf_announcement`
+--
+
+DROP TABLE IF EXISTS `whitescarf_announcement`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `whitescarf_announcement` (
+  `whitescarf_announcement_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_date` date NOT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `announcement` text NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`whitescarf_announcement_id`),
+  KEY `FK_whitescarf_announce__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_whitescarf_announce__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `whitescarf_faq`
+--
+
+DROP TABLE IF EXISTS `whitescarf_faq`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `whitescarf_faq` (
+  `whitescarf_faq_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `display_order` tinyint(3) unsigned NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` text,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`whitescarf_faq_id`),
+  KEY `FK_whitescarf_faq__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_whitescarf_faq__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `yewbow`
+--
+
+DROP TABLE IF EXISTS `yewbow`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `yewbow` (
+  `yewbow_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL,
+  `eastern_award_id` mediumint(8) unsigned DEFAULT NULL,
+  `award_date` date DEFAULT NULL,
+  `sequence` smallint(6) NOT NULL DEFAULT '0',
+  `reign_id` mediumint(8) unsigned DEFAULT NULL,
+  `principality_id` mediumint(8) unsigned DEFAULT NULL,
+  `scroll_file_name` varchar(255) DEFAULT NULL,
+  `scroll_scribe` varchar(255) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`yewbow_id`),
+  KEY `award_date` (`award_date`),
+  KEY `FK_yewbow__eastern` (`eastern_id`),
+  KEY `FK_yewbow__eastern_award` (`eastern_award_id`),
+  KEY `FK_yewbow__last_edited` (`last_updated_by`),
+  KEY `FK_yewbow__principality` (`principality_id`),
+  KEY `FK_yewbow__reign` (`reign_id`),
+  CONSTRAINT `FK_yewbow__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_yewbow__eastern_award` FOREIGN KEY (`eastern_award_id`) REFERENCES `east_op`.`eastern_award` (`eastern_award_id`),
+  CONSTRAINT `FK_yewbow__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_yewbow__principality` FOREIGN KEY (`principality_id`) REFERENCES `east_op`.`principality` (`principality_id`),
+  CONSTRAINT `FK_yewbow__reign` FOREIGN KEY (`reign_id`) REFERENCES `east_op`.`reign` (`reign_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=69 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `yewbow_announcement`
+--
+
+DROP TABLE IF EXISTS `yewbow_announcement`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `yewbow_announcement` (
+  `yewbow_announcement_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `announcement_date` date NOT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `announcement` text NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`yewbow_announcement_id`),
+  KEY `FK_yewbow_announce__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_yewbow_announce__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `yewbow_faq`
+--
+
+DROP TABLE IF EXISTS `yewbow_faq`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `yewbow_faq` (
+  `yewbow_faq_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `display_order` tinyint(3) unsigned NOT NULL,
+  `question` varchar(255) NOT NULL,
+  `answer` text,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`yewbow_faq_id`),
+  KEY `FK_yewbow_faq__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_yewbow_faq__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Current Database: `east_op_test`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `east_op_test` /*!40100 DEFAULT CHARACTER SET latin1 */;
+
+USE `east_op_test`;
+
+--
+-- Temporary table structure for view `eastern`
+--
+
+DROP TABLE IF EXISTS `eastern`;
+/*!50001 DROP VIEW IF EXISTS `eastern`*/;
+/*!50001 CREATE TABLE `eastern` (
+  `eastern_id` mediumint(8) unsigned,
+  `first_name` varchar(50),
+  `middle_name` varchar(50),
+  `last_name` varchar(50),
+  `address1` varchar(100),
+  `address2` varchar(100),
+  `city` varchar(50),
+  `state` varchar(2),
+  `zip` varchar(10),
+  `country` varchar(50),
+  `email` varchar(100),
+  `alternate_email` varchar(100),
+  `phone_home` varchar(20),
+  `phone_mobile` varchar(20),
+  `phone_work` varchar(20),
+  `call_times` varchar(20),
+  `gender` char(1),
+  `deceased` tinyint(4),
+  `deceased_date` date,
+  `inactive` tinyint(4),
+  `website` varchar(100),
+  `biography` text,
+  `op_notes` text,
+  `sca_name` varchar(255),
+  `preferred_sca_name` varchar(255),
+  `name_reg_date` date,
+  `alternate_names` varchar(255),
+  `blazon` text,
+  `device_reg_date` date,
+  `device_file_name` varchar(255),
+  `device_file_credit` varchar(255),
+  `membership_number` mediumint(8) unsigned,
+  `expiration_date` date,
+  `expiration_date_pending` date,
+  `revoked` tinyint(4),
+  `revoked_date` date,
+  `branch_id` mediumint(8) unsigned,
+  `picture_file_name` varchar(255),
+  `picture_file_credit` varchar(255),
+  `publish_name` tinyint(4),
+  `publish_address` tinyint(4),
+  `publish_email` tinyint(4),
+  `publish_alternate_email` tinyint(4),
+  `publish_phone_home` tinyint(4),
+  `publish_phone_mobile` tinyint(4),
+  `publish_phone_work` tinyint(4),
+  `background_check_date` date,
+  `background_check_result` tinyint(4),
+  `heraldic_rank_id` mediumint(8) unsigned,
+  `heraldic_title` varchar(255),
+  `heraldic_interests` varchar(255),
+  `date_created` date,
+  `last_updated` date,
+  `last_updated_by` mediumint(8) unsigned
+) */;
+
+--
+-- Table structure for table `eastern_award`
+--
+
+DROP TABLE IF EXISTS `eastern_award`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `eastern_award` (
+  `eastern_award_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `award_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `award_date` date DEFAULT NULL,
+  `event_id` mediumint(8) unsigned DEFAULT NULL,
+  `sequence` smallint(6) NOT NULL DEFAULT '0',
+  `premier` tinyint(4) NOT NULL DEFAULT '0',
+  `retired_date` date DEFAULT NULL,
+  `resigned_date` date DEFAULT NULL,
+  `revoked_date` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  `comments` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `court_report_id` mediumint(8) unsigned DEFAULT NULL,
+  `private` tinyint(4) NOT NULL DEFAULT '0',
+  `scroll_status_id` mediumint(8) unsigned DEFAULT NULL,
+  `scroll_assignees` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `scroll_assigned_date` date DEFAULT NULL,
+  `scroll_notes` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `branch_id` mediumint(8) unsigned DEFAULT NULL,
+  `gender` char(1) DEFAULT NULL,
+  PRIMARY KEY (`eastern_award_id`),
+  KEY `FK_eastern_award__eastern` (`eastern_id`),
+  KEY `FK_eastern_award__award` (`award_id`),
+  KEY `FK_eastern_award__event` (`event_id`),
+  KEY `FK_eastern_award__last_edited` (`last_updated_by`),
+  KEY `FK_eastern_award__court_report` (`court_report_id`),
+  KEY `FK_eastern_award__scroll_status` (`scroll_status_id`),
+  KEY `FK_eastern_award__branch` (`branch_id`),
+  KEY `award_date` (`award_date`,`sequence`),
+  CONSTRAINT `FK_eastern_award__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `east_auth_test`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_eastern_award__award` FOREIGN KEY (`award_id`) REFERENCES `award` (`award_id`),
+  CONSTRAINT `FK_eastern_award__branch` FOREIGN KEY (`branch_id`) REFERENCES `east_branch_test`.`branch` (`branch_id`),
+  CONSTRAINT `FK_eastern_award__court_report` FOREIGN KEY (`court_report_id`) REFERENCES `court_report` (`court_report_id`),
+  CONSTRAINT `FK_eastern_award__event` FOREIGN KEY (`event_id`) REFERENCES `event` (`event_id`),
+  CONSTRAINT `FK_eastern_award__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth_test`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_eastern_award__scroll_status` FOREIGN KEY (`scroll_status_id`) REFERENCES `scroll_status` (`scroll_status_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=18245 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `award`
+--
+
+DROP TABLE IF EXISTS `award`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `award` (
+  `award_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `award_name` varchar(255) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `select_branch` tinyint(4) NOT NULL DEFAULT '0',
+  `type_id` mediumint(8) unsigned DEFAULT NULL,
+  `title_id` mediumint(9) DEFAULT NULL,
+  `award_file_name` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `collective_name` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `award_name_male` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `award_name_female` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `closed` tinyint(4) NOT NULL DEFAULT '0',
+  `award_blurb` text CHARACTER SET latin1,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  `website` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `award_group_id` mediumint(8) unsigned DEFAULT NULL,
+  `branch_id` mediumint(8) unsigned DEFAULT NULL,
+  `prev_type_id` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`award_id`),
+  KEY `FK_award__precedence` (`type_id`),
+  KEY `FK_award__last_edited` (`last_updated_by`),
+  KEY `FK_award__award_group` (`award_group_id`),
+  KEY `award_name` (`award_name`),
+  KEY `FK_award__branch` (`branch_id`),
+  KEY `FK_award__precedence_prev` (`prev_type_id`),
+  CONSTRAINT `FK_award__award_group` FOREIGN KEY (`award_group_id`) REFERENCES `award_group` (`award_group_id`),
+  CONSTRAINT `FK_award__branch` FOREIGN KEY (`branch_id`) REFERENCES `east_branch_test`.`branch` (`branch_id`),
+  CONSTRAINT `FK_award__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth_test`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_award__precedence` FOREIGN KEY (`type_id`) REFERENCES `precedence` (`type_id`),
+  CONSTRAINT `FK_award__precedence_prev` FOREIGN KEY (`prev_type_id`) REFERENCES `precedence` (`type_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=870 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `award_group`
+--
+
+DROP TABLE IF EXISTS `award_group`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `award_group` (
+  `award_group_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `award_group_name` varchar(255) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `award_file_name` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `award_file_name2` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `collective_name` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `website` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `award_blurb` text CHARACTER SET latin1,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`award_group_id`),
+  KEY `FK_award_group__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_award_group__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth_test`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `baronage`
+--
+
+DROP TABLE IF EXISTS `baronage`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `baronage` (
+  `baronage_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `baron_id` mediumint(8) unsigned DEFAULT NULL,
+  `baroness_id` mediumint(8) unsigned DEFAULT NULL,
+  `baronage_display` varchar(50) CHARACTER SET latin1 DEFAULT NULL,
+  `event_id` mediumint(8) unsigned DEFAULT NULL,
+  `baronage_start_sequence` smallint(6) NOT NULL DEFAULT '0',
+  `baronage_start_date` date DEFAULT NULL,
+  `baronage_end_date` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  `branch_id` mediumint(8) unsigned NOT NULL,
+  PRIMARY KEY (`baronage_id`),
+  KEY `FK_baronage__event` (`event_id`),
+  KEY `FK_baronage__last_edited` (`last_updated_by`),
+  KEY `FK_baronage__baron_eastern` (`baron_id`),
+  KEY `FK_baronage__baroness_eastern` (`baroness_id`),
+  KEY `FK_baronage__branch` (`branch_id`),
+  KEY `baronage_start_date` (`baronage_start_date`),
+  CONSTRAINT `FK_baronage__baroness_eastern` FOREIGN KEY (`baroness_id`) REFERENCES `east_auth_test`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_baronage__baron_eastern` FOREIGN KEY (`baron_id`) REFERENCES `east_auth_test`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_baronage__branch` FOREIGN KEY (`branch_id`) REFERENCES `east_branch_test`.`branch` (`branch_id`),
+  CONSTRAINT `FK_baronage__event` FOREIGN KEY (`event_id`) REFERENCES `event` (`event_id`),
+  CONSTRAINT `FK_baronage__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth_test`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=140 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `branch`
+--
+
+DROP TABLE IF EXISTS `branch`;
+/*!50001 DROP VIEW IF EXISTS `branch`*/;
+/*!50001 CREATE TABLE `branch` (
+  `branch_id` mediumint(8) unsigned,
+  `branch` varchar(50),
+  `parent_branch_id` mediumint(8) unsigned,
+  `branch_type_id` mediumint(8) unsigned,
+  `incipient` tinyint(4),
+  `ceremonial_date_founded` date,
+  `date_founded` date,
+  `date_dissolved` date,
+  `inactive` tinyint(4),
+  `name_reg_date` date,
+  `blazon` text,
+  `device_reg_date` date,
+  `device_file_name` varchar(255),
+  `device_file_credit` varchar(255),
+  `website` varchar(100),
+  `branch_area_description` text,
+  `state_code` char(2),
+  `display_order` mediumint(8) unsigned,
+  `is_eastern` tinyint(4),
+  `notes` text,
+  `regional_group_id` mediumint(8) unsigned,
+  `group_id` int(11),
+  `last_updated` date,
+  `last_updated_by` mediumint(8) unsigned
+) */;
+
+--
+-- Temporary table structure for view `branch_type`
+--
+
+DROP TABLE IF EXISTS `branch_type`;
+/*!50001 DROP VIEW IF EXISTS `branch_type`*/;
+/*!50001 CREATE TABLE `branch_type` (
+  `branch_type_id` mediumint(8) unsigned,
+  `branch_type` varchar(50),
+  `last_updated` date,
+  `last_updated_by` mediumint(8) unsigned
+) */;
+
+--
+-- Table structure for table `court_report`
+--
+
+DROP TABLE IF EXISTS `court_report`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `court_report` (
+  `court_report_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `event_id` mediumint(8) unsigned DEFAULT NULL,
+  `reign_id` mediumint(8) unsigned DEFAULT NULL,
+  `principality_id` mediumint(8) unsigned DEFAULT NULL,
+  `baronage_id` mediumint(8) unsigned DEFAULT NULL,
+  `court_type` char(1) CHARACTER SET latin1 DEFAULT NULL,
+  `court_date` date DEFAULT NULL,
+  `court_time` tinyint(4) DEFAULT NULL,
+  `herald` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `received_date` date DEFAULT NULL,
+  `entered_date` date DEFAULT NULL,
+  `notes` text CHARACTER SET latin1,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  `kingdom_id` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`court_report_id`),
+  KEY `FK_court_report__event` (`event_id`),
+  KEY `FK_court_report__reign` (`reign_id`),
+  KEY `FK_court_report__principality` (`principality_id`),
+  KEY `FK_court_report__baronage` (`baronage_id`),
+  KEY `FK_court_report__last_edited` (`last_updated_by`),
+  KEY `court_date` (`court_date`),
+  KEY `received_date` (`received_date`),
+  KEY `entered_date` (`entered_date`),
+  KEY `FK_court_report__kingdom` (`kingdom_id`),
+  CONSTRAINT `FK_court_report__baronage` FOREIGN KEY (`baronage_id`) REFERENCES `baronage` (`baronage_id`),
+  CONSTRAINT `FK_court_report__event` FOREIGN KEY (`event_id`) REFERENCES `event` (`event_id`),
+  CONSTRAINT `FK_court_report__kingdom` FOREIGN KEY (`kingdom_id`) REFERENCES `east_branch_test`.`branch` (`branch_id`),
+  CONSTRAINT `FK_court_report__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth_test`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_court_report__principality` FOREIGN KEY (`principality_id`) REFERENCES `principality` (`principality_id`),
+  CONSTRAINT `FK_court_report__reign` FOREIGN KEY (`reign_id`) REFERENCES `reign` (`reign_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2288 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `event`
+--
+
+DROP TABLE IF EXISTS `event`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `event` (
+  `event_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `event_name` varchar(100) CHARACTER SET latin1 DEFAULT NULL,
+  `start_date` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `branch_id` mediumint(8) unsigned NOT NULL,
+  PRIMARY KEY (`event_id`),
+  KEY `FK_event__last_edited` (`last_updated_by`),
+  KEY `event_name` (`event_name`),
+  KEY `start_date` (`start_date`),
+  KEY `end_date` (`end_date`),
+  KEY `FK_event__branch` (`branch_id`),
+  CONSTRAINT `FK_event__branch` FOREIGN KEY (`branch_id`) REFERENCES `east_branch_test`.`branch` (`branch_id`),
+  CONSTRAINT `FK_event__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth_test`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1422 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `precedence`
+--
+
+DROP TABLE IF EXISTS `precedence`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `precedence` (
+  `type_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `type` varchar(50) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `precedence` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `display_name` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `award_file_name` varchar(255) CHARACTER SET latin1 DEFAULT NULL,
+  `award_blurb` text CHARACTER SET latin1,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`type_id`),
+  KEY `FK_precedence__last_edited` (`last_updated_by`),
+  KEY `precedence` (`precedence`),
+  CONSTRAINT `FK_precedence__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth_test`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `principality`
+--
+
+DROP TABLE IF EXISTS `principality`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `principality` (
+  `principality_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `prince_id` mediumint(8) unsigned DEFAULT NULL,
+  `princess_id` mediumint(8) unsigned DEFAULT NULL,
+  `principality_display` varchar(50) CHARACTER SET latin1 DEFAULT NULL,
+  `event_id` mediumint(8) unsigned DEFAULT NULL,
+  `principality_start_sequence` smallint(6) NOT NULL DEFAULT '0',
+  `principality_start_date` date DEFAULT NULL,
+  `principality_end_date` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`principality_id`),
+  KEY `FK_principality__event` (`event_id`),
+  KEY `FK_principality__last_edited` (`last_updated_by`),
+  KEY `FK_principality__prince_eastern` (`prince_id`),
+  KEY `FK_principality__princess_eastern` (`princess_id`),
+  KEY `principality_start_date` (`principality_start_date`),
+  CONSTRAINT `FK_principality__event` FOREIGN KEY (`event_id`) REFERENCES `event` (`event_id`),
+  CONSTRAINT `FK_principality__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth_test`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_principality__princess_eastern` FOREIGN KEY (`princess_id`) REFERENCES `east_auth_test`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_principality__prince_eastern` FOREIGN KEY (`prince_id`) REFERENCES `east_auth_test`.`eastern` (`eastern_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `reign`
+--
+
+DROP TABLE IF EXISTS `reign`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `reign` (
+  `reign_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `king_id` mediumint(8) unsigned DEFAULT NULL,
+  `queen_id` mediumint(8) unsigned DEFAULT NULL,
+  `monarchs_display` varchar(50) CHARACTER SET latin1 DEFAULT NULL,
+  `event_id` mediumint(8) unsigned DEFAULT NULL,
+  `reign_start_sequence` smallint(6) NOT NULL DEFAULT '0',
+  `reign_start_date` date DEFAULT NULL,
+  `reign_end_date` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`reign_id`),
+  KEY `FK_reign__event` (`event_id`),
+  KEY `FK_reign__last_edited` (`last_updated_by`),
+  KEY `FK_reign__king_eastern` (`king_id`),
+  KEY `FK_reign__queen_eastern` (`queen_id`),
+  KEY `reign_start_date` (`reign_start_date`),
+  CONSTRAINT `FK_reign__event` FOREIGN KEY (`event_id`) REFERENCES `event` (`event_id`),
+  CONSTRAINT `FK_reign__king_eastern` FOREIGN KEY (`king_id`) REFERENCES `east_auth_test`.`eastern` (`eastern_id`),
+  CONSTRAINT `FK_reign__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth_test`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_reign__queen_eastern` FOREIGN KEY (`queen_id`) REFERENCES `east_auth_test`.`eastern` (`eastern_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `scroll_status`
+--
+
+DROP TABLE IF EXISTS `scroll_status`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `scroll_status` (
+  `scroll_status_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `scroll_status_code` char(1) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `scroll_status` varchar(25) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  PRIMARY KEY (`scroll_status_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `title`
+--
+
+DROP TABLE IF EXISTS `title`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `title` (
+  `title_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `title_male` varchar(50) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `title_female` varchar(50) CHARACTER SET latin1 NOT NULL DEFAULT '',
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`title_id`),
+  KEY `FK_title__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_title__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth_test`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `user_auth`
+--
+
+DROP TABLE IF EXISTS `user_auth`;
+/*!50001 DROP VIEW IF EXISTS `user_auth`*/;
+/*!50001 CREATE TABLE `user_auth` (
+  `user_id` mediumint(8) unsigned,
+  `eastern_id` mediumint(8) unsigned,
+  `username` varchar(50),
+  `pass_word` varchar(50),
+  `email` varchar(100),
+  `first_name` varchar(50),
+  `last_name` varchar(50),
+  `sca_name` varchar(255),
+  `account_request_date` date,
+  `last_log` varchar(16),
+  `client_ip` varchar(15),
+  `chivalry` tinyint(4),
+  `laurel` tinyint(4),
+  `pelican` tinyint(4),
+  `rose` tinyint(4),
+  `whitescarf` tinyint(4),
+  `pearl` tinyint(4),
+  `dolphin` tinyint(4),
+  `kraken` tinyint(4),
+  `seastag` tinyint(4),
+  `yewbow` tinyint(4),
+  `chivalry_pend` tinyint(4),
+  `laurel_pend` tinyint(4),
+  `pelican_pend` tinyint(4),
+  `rose_pend` tinyint(4),
+  `whitescarf_pend` tinyint(4),
+  `pearl_pend` tinyint(4),
+  `dolphin_pend` tinyint(4),
+  `kraken_pend` tinyint(4),
+  `seastag_pend` tinyint(4),
+  `yewbow_pend` tinyint(4),
+  `chivalry_admin` tinyint(4),
+  `laurel_admin` tinyint(4),
+  `pelican_admin` tinyint(4),
+  `rose_admin` tinyint(4),
+  `whitescarf_admin` tinyint(4),
+  `pearl_admin` tinyint(4),
+  `dolphin_admin` tinyint(4),
+  `kraken_admin` tinyint(4),
+  `seastag_admin` tinyint(4),
+  `yewbow_admin` tinyint(4),
+  `seneschal_admin` tinyint(4),
+  `youth_admin` tinyint(4),
+  `exchequer_admin` tinyint(4),
+  `herald_admin` tinyint(4),
+  `marshal_admin` tinyint(4),
+  `mol_admin` tinyint(4),
+  `moas_admin` tinyint(4),
+  `chronicler_admin` tinyint(4),
+  `chirurgeon_admin` tinyint(4),
+  `webminister_admin` tinyint(4),
+  `chatelaine_admin` tinyint(4),
+  `op_admin` tinyint(4),
+  `backlog_admin` tinyint(4),
+  `university_admin` tinyint(4),
+  `award_admin` tinyint(4),
+  `spike_admin` tinyint(4),
+  `date_created` date,
+  `last_updated` date,
+  `last_updated_by` mediumint(8) unsigned
+) */;
+
+--
+-- Current Database: `east_spike`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `east_spike` /*!40100 DEFAULT CHARACTER SET utf8 */;
+
+USE `east_spike`;
+
+--
+-- Table structure for table `activities`
+--
+
+DROP TABLE IF EXISTS `activities`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `activities` (
+  `event_id` varchar(8) NOT NULL DEFAULT '',
+  `none` tinyint(4) DEFAULT NULL,
+  `armored` tinyint(4) DEFAULT NULL,
+  `rapier` tinyint(4) DEFAULT NULL,
+  `archery` tinyint(4) DEFAULT NULL,
+  `combat_archery` tinyint(4) DEFAULT NULL,
+  `thrown` tinyint(4) DEFAULT NULL,
+  `equestrian` tinyint(4) DEFAULT NULL,
+  `hound` tinyint(4) DEFAULT NULL,
+  `youth` tinyint(4) DEFAULT NULL,
+  `mic_sname` varchar(70) DEFAULT NULL,
+  `mic_mname` varchar(70) DEFAULT NULL,
+  `mic_email` varchar(70) DEFAULT NULL,
+  `mol_sname` varchar(70) DEFAULT NULL,
+  `mol_mname` varchar(70) DEFAULT NULL,
+  `mol_email` varchar(70) DEFAULT NULL,
+  PRIMARY KEY (`event_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `auth`
+--
+
+DROP TABLE IF EXISTS `auth`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `auth` (
+  `user` varchar(20) NOT NULL DEFAULT '',
+  `pass` varchar(20) NOT NULL DEFAULT '',
+  `last_log` varchar(16) DEFAULT NULL,
+  `client_ip` varchar(15) DEFAULT NULL,
+  `aflag` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`user`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `autocrat`
+--
+
+DROP TABLE IF EXISTS `autocrat`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `autocrat` (
+  `event_id` varchar(8) NOT NULL DEFAULT '',
+  `mname` varchar(70) DEFAULT NULL,
+  `sname` varchar(70) DEFAULT NULL,
+  `address` varchar(120) DEFAULT NULL,
+  `city` varchar(120) DEFAULT NULL,
+  `state` char(2) DEFAULT NULL,
+  `zip` varchar(5) DEFAULT NULL,
+  `phone` varchar(15) DEFAULT NULL,
+  `alt_phone` varchar(15) DEFAULT NULL,
+  `email` varchar(70) DEFAULT NULL,
+  `mem_num` varchar(10) DEFAULT NULL,
+  `mem_exp` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`event_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `event_main`
+--
+
+DROP TABLE IF EXISTS `event_main`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `event_main` (
+  `event_id` varchar(8) NOT NULL DEFAULT '',
+  `name` varchar(120) DEFAULT NULL,
+  `gname` varchar(80) DEFAULT NULL,
+  `sponsor` varchar(80) DEFAULT NULL,
+  `start_date` date NOT NULL DEFAULT '0000-00-00',
+  `end_date` date NOT NULL DEFAULT '0000-00-00',
+  `start_time` varchar(8) DEFAULT NULL,
+  `end_time` varchar(8) DEFAULT NULL,
+  `site_name` varchar(120) DEFAULT NULL,
+  `address` varchar(120) DEFAULT NULL,
+  `city` varchar(120) DEFAULT NULL,
+  `state` char(2) DEFAULT NULL,
+  `zip` varchar(5) DEFAULT NULL,
+  `conflict` tinyint(4) NOT NULL DEFAULT '1',
+  `restrictions` text,
+  `alcohol_perm` tinyint(4) NOT NULL DEFAULT '0',
+  `password` varchar(16) DEFAULT NULL,
+  `sen_password` varchar(16) DEFAULT NULL,
+  `progress` tinyint(4) NOT NULL DEFAULT '0',
+  `princess` tinyint(4) NOT NULL DEFAULT '0',
+  `prince` tinyint(4) NOT NULL DEFAULT '0',
+  `queen` tinyint(4) NOT NULL DEFAULT '0',
+  `king` tinyint(4) NOT NULL DEFAULT '0',
+  `highness` tinyint(4) NOT NULL DEFAULT '0',
+  `royal` tinyint(4) NOT NULL DEFAULT '0',
+  `approve` tinyint(4) NOT NULL DEFAULT '0',
+  `publish` tinyint(4) NOT NULL DEFAULT '0',
+  `flyer` tinyint(4) NOT NULL DEFAULT '0',
+  `flyer_name` varchar(25) DEFAULT NULL,
+  `cancel` tinyint(4) NOT NULL DEFAULT '0',
+  `archive` tinyint(4) NOT NULL DEFAULT '0',
+  `external` tinyint(4) NOT NULL DEFAULT '0',
+  `website` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`event_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `flyers_legacy`
+--
+
+DROP TABLE IF EXISTS `flyers_legacy`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `flyers_legacy` (
+  `flyer_id` int(11) NOT NULL AUTO_INCREMENT,
+  `event_id` varchar(8) DEFAULT NULL,
+  `flyer_data` mediumtext,
+  PRIMARY KEY (`flyer_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=549 DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `seneschal`
+--
+
+DROP TABLE IF EXISTS `seneschal`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `seneschal` (
+  `event_id` varchar(8) NOT NULL DEFAULT '',
+  `mname` varchar(70) DEFAULT NULL,
+  `sname` varchar(70) DEFAULT NULL,
+  `address` varchar(120) DEFAULT NULL,
+  `city` varchar(70) DEFAULT NULL,
+  `state` char(2) DEFAULT NULL,
+  `zip` varchar(5) DEFAULT NULL,
+  `phone` varchar(15) DEFAULT NULL,
+  `alt_phone` varchar(15) DEFAULT NULL,
+  `email` varchar(70) DEFAULT NULL,
+  `mem_num` varchar(10) DEFAULT NULL,
+  `mem_exp` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`event_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `tracking`
+--
+
+DROP TABLE IF EXISTS `tracking`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `tracking` (
+  `event_id` varchar(8) NOT NULL DEFAULT '',
+  `registration_received` date NOT NULL DEFAULT '0000-00-00',
+  `paperwork_received` date NOT NULL DEFAULT '0000-00-00',
+  `flyer_received` date DEFAULT NULL,
+  `approved_date` date NOT NULL DEFAULT '0000-00-00',
+  `autocrat_sig` tinyint(4) NOT NULL DEFAULT '0',
+  `seneschal_sig` tinyint(4) NOT NULL DEFAULT '0',
+  `marshal_sig` tinyint(4) NOT NULL DEFAULT '0',
+  `mol_sig` tinyint(4) NOT NULL DEFAULT '0',
+  `kingdom` tinyint(4) NOT NULL DEFAULT '0',
+  `reserved_permission` date DEFAULT NULL,
+  `reserved_method` varchar(6) DEFAULT NULL,
+  PRIMARY KEY (`event_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Current Database: `east_branch`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `east_branch` /*!40100 DEFAULT CHARACTER SET latin1 */;
+
+USE `east_branch`;
+
+--
+-- Temporary table structure for view `eastern_barony`
+--
+
+DROP TABLE IF EXISTS `eastern_barony`;
+/*!50001 DROP VIEW IF EXISTS `eastern_barony`*/;
+/*!50001 CREATE TABLE `eastern_barony` (
+  `branch_id` mediumint(8) unsigned,
+  `branch` varchar(50),
+  `parent_branch_id` mediumint(8) unsigned,
+  `branch_type_id` mediumint(8) unsigned,
+  `incipient` tinyint(4),
+  `ceremonial_date_founded` date,
+  `date_founded` date,
+  `date_dissolved` date,
+  `inactive` tinyint(4),
+  `name_reg_date` date,
+  `blazon` text,
+  `device_reg_date` date,
+  `device_file_name` varchar(255),
+  `device_file_credit` varchar(255),
+  `website` varchar(100),
+  `branch_area_description` text,
+  `state_code` char(2),
+  `display_order` mediumint(8) unsigned,
+  `is_eastern` tinyint(4),
+  `notes` text,
+  `regional_group_id` mediumint(8) unsigned,
+  `group_id` int(11),
+  `last_updated` date,
+  `last_updated_by` mediumint(8) unsigned
+) */;
+
+--
+-- Temporary table structure for view `eastern_branch`
+--
+
+DROP TABLE IF EXISTS `eastern_branch`;
+/*!50001 DROP VIEW IF EXISTS `eastern_branch`*/;
+/*!50001 CREATE TABLE `eastern_branch` (
+  `branch_id` mediumint(8) unsigned,
+  `branch` varchar(50),
+  `parent_branch_id` mediumint(8) unsigned,
+  `branch_type_id` mediumint(8) unsigned,
+  `incipient` tinyint(4),
+  `ceremonial_date_founded` date,
+  `date_founded` date,
+  `date_dissolved` date,
+  `inactive` tinyint(4),
+  `name_reg_date` date,
+  `device_reg_date` date,
+  `blazon` text,
+  `device_file_name` varchar(255),
+  `device_file_credit` varchar(255),
+  `website` varchar(100),
+  `branch_area_description` text,
+  `state_code` char(2),
+  `display_order` mediumint(8) unsigned,
+  `notes` text,
+  `last_updated` date,
+  `last_updated_by` mediumint(8) unsigned
+) */;
+
+--
+-- Table structure for table `branch`
+--
+
+DROP TABLE IF EXISTS `branch`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `branch` (
+  `branch_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `branch` varchar(50) NOT NULL,
+  `parent_branch_id` mediumint(8) unsigned DEFAULT NULL,
+  `branch_type_id` mediumint(8) unsigned NOT NULL,
+  `incipient` tinyint(4) NOT NULL DEFAULT '0',
+  `ceremonial_date_founded` date DEFAULT NULL,
+  `date_founded` date DEFAULT NULL,
+  `date_dissolved` date DEFAULT NULL,
+  `inactive` tinyint(4) NOT NULL DEFAULT '0',
+  `name_reg_date` date DEFAULT NULL,
+  `blazon` text,
+  `device_reg_date` date DEFAULT NULL,
+  `device_file_name` varchar(255) DEFAULT NULL,
+  `device_file_credit` varchar(255) DEFAULT NULL,
+  `website` varchar(100) DEFAULT NULL,
+  `branch_area_description` text,
+  `state_code` char(2) DEFAULT NULL,
+  `display_order` mediumint(8) unsigned DEFAULT NULL,
+  `is_eastern` tinyint(4) NOT NULL DEFAULT '0',
+  `notes` text,
+  `regional_group_id` mediumint(8) unsigned DEFAULT NULL,
+  `group_id` int(11) DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`branch_id`),
+  KEY `branch` (`branch`),
+  KEY `inactive` (`inactive`),
+  KEY `is_eastern` (`is_eastern`),
+  KEY `state_code` (`state_code`),
+  KEY `FK_branch__branch_type` (`branch_type_id`),
+  KEY `FK_branch__last_edited` (`last_updated_by`),
+  KEY `FK_branch__parent` (`parent_branch_id`),
+  CONSTRAINT `FK_branch__branch_type` FOREIGN KEY (`branch_type_id`) REFERENCES `branch_type` (`branch_type_id`),
+  CONSTRAINT `FK_branch__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`),
+  CONSTRAINT `FK_branch__parent` FOREIGN KEY (`parent_branch_id`) REFERENCES `branch` (`branch_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=153 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `branch_neighbor`
+--
+
+DROP TABLE IF EXISTS `branch_neighbor`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `branch_neighbor` (
+  `branch_neighbor_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `branch1_id` mediumint(8) unsigned NOT NULL,
+  `branch2_id` mediumint(8) unsigned NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`branch_neighbor_id`),
+  KEY `FK_branch_neighbor__branch1` (`branch1_id`),
+  KEY `FK_branch_neighbor__branch2` (`branch2_id`),
+  KEY `FK_branch_neighbor__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_branch_neighbor__branch1` FOREIGN KEY (`branch1_id`) REFERENCES `branch` (`branch_id`),
+  CONSTRAINT `FK_branch_neighbor__branch2` FOREIGN KEY (`branch2_id`) REFERENCES `branch` (`branch_id`),
+  CONSTRAINT `FK_branch_neighbor__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=168 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `branch_type`
+--
+
+DROP TABLE IF EXISTS `branch_type`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `branch_type` (
+  `branch_type_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `branch_type` varchar(50) NOT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`branch_type_id`),
+  KEY `FK_branch_type__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_branch_type__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `east_auth`.`user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `current_eastern_barony`
+--
+
+DROP TABLE IF EXISTS `current_eastern_barony`;
+/*!50001 DROP VIEW IF EXISTS `current_eastern_barony`*/;
+/*!50001 CREATE TABLE `current_eastern_barony` (
+  `branch_id` mediumint(8) unsigned,
+  `branch` varchar(50),
+  `parent_branch_id` mediumint(8) unsigned,
+  `branch_type_id` mediumint(8) unsigned,
+  `incipient` tinyint(4),
+  `ceremonial_date_founded` date,
+  `date_founded` date,
+  `date_dissolved` date,
+  `inactive` tinyint(4),
+  `name_reg_date` date,
+  `blazon` text,
+  `device_reg_date` date,
+  `device_file_name` varchar(255),
+  `device_file_credit` varchar(255),
+  `website` varchar(100),
+  `branch_area_description` text,
+  `state_code` char(2),
+  `display_order` mediumint(8) unsigned,
+  `is_eastern` tinyint(4),
+  `notes` text,
+  `regional_group_id` mediumint(8) unsigned,
+  `group_id` int(11),
+  `last_updated` date,
+  `last_updated_by` mediumint(8) unsigned
+) */;
+
+--
+-- Temporary table structure for view `current_eastern_branch`
+--
+
+DROP TABLE IF EXISTS `current_eastern_branch`;
+/*!50001 DROP VIEW IF EXISTS `current_eastern_branch`*/;
+/*!50001 CREATE TABLE `current_eastern_branch` (
+  `branch_id` mediumint(8) unsigned,
+  `branch` varchar(50),
+  `parent_branch_id` mediumint(8) unsigned,
+  `branch_type_id` mediumint(8) unsigned,
+  `incipient` tinyint(4),
+  `ceremonial_date_founded` date,
+  `date_founded` date,
+  `name_reg_date` date,
+  `device_reg_date` date,
+  `blazon` text,
+  `device_file_name` varchar(255),
+  `device_file_credit` varchar(255),
+  `website` varchar(100),
+  `branch_area_description` text,
+  `state_code` char(2),
+  `display_order` mediumint(8) unsigned,
+  `notes` text,
+  `last_updated` date,
+  `last_updated_by` mediumint(8) unsigned
+) */;
+
+--
+-- Temporary table structure for view `current_eastern_branch_plus_kingdom`
+--
+
+DROP TABLE IF EXISTS `current_eastern_branch_plus_kingdom`;
+/*!50001 DROP VIEW IF EXISTS `current_eastern_branch_plus_kingdom`*/;
+/*!50001 CREATE TABLE `current_eastern_branch_plus_kingdom` (
+  `branch_id` mediumint(8) unsigned,
+  `branch` varchar(50),
+  `parent_branch_id` mediumint(8) unsigned,
+  `branch_type_id` mediumint(8) unsigned,
+  `incipient` tinyint(4),
+  `ceremonial_date_founded` date,
+  `date_founded` date,
+  `is_eastern` tinyint(4),
+  `name_reg_date` date,
+  `device_reg_date` date,
+  `blazon` text,
+  `device_file_name` varchar(255),
+  `device_file_credit` varchar(255),
+  `website` varchar(100),
+  `branch_area_description` text,
+  `state_code` char(2),
+  `display_order` mediumint(8) unsigned,
+  `notes` text,
+  `last_updated` date,
+  `last_updated_by` mediumint(8) unsigned
+) */;
+
+--
+-- Temporary table structure for view `current_branch`
+--
+
+DROP TABLE IF EXISTS `current_branch`;
+/*!50001 DROP VIEW IF EXISTS `current_branch`*/;
+/*!50001 CREATE TABLE `current_branch` (
+  `branch_id` mediumint(8) unsigned,
+  `branch` varchar(50),
+  `parent_branch_id` mediumint(8) unsigned,
+  `branch_type_id` mediumint(8) unsigned,
+  `incipient` tinyint(4),
+  `ceremonial_date_founded` date,
+  `date_founded` date,
+  `is_eastern` tinyint(4),
+  `name_reg_date` date,
+  `device_reg_date` date,
+  `blazon` text,
+  `device_file_name` varchar(255),
+  `device_file_credit` varchar(255),
+  `website` varchar(100),
+  `branch_area_description` text,
+  `state_code` char(2),
+  `display_order` mediumint(8) unsigned,
+  `notes` text,
+  `last_updated` date,
+  `last_updated_by` mediumint(8) unsigned
+) */;
+
+--
+-- Temporary table structure for view `kingdom`
+--
+
+DROP TABLE IF EXISTS `kingdom`;
+/*!50001 DROP VIEW IF EXISTS `kingdom`*/;
+/*!50001 CREATE TABLE `kingdom` (
+  `branch_id` mediumint(8) unsigned,
+  `branch` varchar(50),
+  `parent_branch_id` mediumint(8) unsigned,
+  `branch_type_id` mediumint(8) unsigned,
+  `incipient` tinyint(4),
+  `ceremonial_date_founded` date,
+  `date_founded` date,
+  `date_dissolved` date,
+  `inactive` tinyint(4),
+  `name_reg_date` date,
+  `blazon` text,
+  `device_reg_date` date,
+  `device_file_name` varchar(255),
+  `device_file_credit` varchar(255),
+  `website` varchar(100),
+  `branch_area_description` text,
+  `state_code` char(2),
+  `display_order` mediumint(8) unsigned,
+  `is_eastern` tinyint(4),
+  `notes` text,
+  `regional_group_id` mediumint(8) unsigned,
+  `group_id` int(11),
+  `last_updated` date,
+  `last_updated_by` mediumint(8) unsigned
+) */;
+
+--
+-- Current Database: `east_auth`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `east_auth` /*!40100 DEFAULT CHARACTER SET latin1 */;
+
+USE `east_auth`;
+
+--
+-- Table structure for table `eastern`
+--
+
+DROP TABLE IF EXISTS `eastern`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `eastern` (
+  `eastern_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `first_name` varchar(50) DEFAULT NULL,
+  `middle_name` varchar(50) DEFAULT NULL,
+  `last_name` varchar(50) DEFAULT NULL,
+  `address1` varchar(100) DEFAULT NULL,
+  `address2` varchar(100) DEFAULT NULL,
+  `city` varchar(50) DEFAULT NULL,
+  `state` varchar(2) DEFAULT NULL,
+  `zip` varchar(10) DEFAULT NULL,
+  `country` varchar(50) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `alternate_email` varchar(100) DEFAULT NULL,
+  `phone_home` varchar(20) DEFAULT NULL,
+  `phone_mobile` varchar(20) DEFAULT NULL,
+  `phone_work` varchar(20) DEFAULT NULL,
+  `call_times` varchar(20) DEFAULT NULL,
+  `gender` char(1) DEFAULT NULL,
+  `deceased` tinyint(4) NOT NULL DEFAULT '0',
+  `deceased_date` date DEFAULT NULL,
+  `inactive` tinyint(4) NOT NULL DEFAULT '0',
+  `website` varchar(100) DEFAULT NULL,
+  `biography` text,
+  `op_notes` text,
+  `sca_name` varchar(255) DEFAULT NULL,
+  `preferred_sca_name` varchar(255) DEFAULT NULL,
+  `name_reg_date` date DEFAULT NULL,
+  `alternate_names` varchar(255) DEFAULT NULL,
+  `blazon` text,
+  `device_reg_date` date DEFAULT NULL,
+  `device_file_name` varchar(255) DEFAULT NULL,
+  `device_file_credit` varchar(255) DEFAULT NULL,
+  `membership_number` mediumint(8) unsigned DEFAULT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `expiration_date_pending` date DEFAULT NULL,
+  `revoked` tinyint(4) NOT NULL DEFAULT '0',
+  `revoked_date` date DEFAULT NULL,
+  `branch_id` mediumint(8) unsigned DEFAULT NULL,
+  `picture_file_name` varchar(255) DEFAULT NULL,
+  `picture_file_credit` varchar(255) DEFAULT NULL,
+  `publish_name` tinyint(4) NOT NULL DEFAULT '0',
+  `publish_address` tinyint(4) NOT NULL DEFAULT '0',
+  `publish_email` tinyint(4) NOT NULL DEFAULT '0',
+  `publish_alternate_email` tinyint(4) NOT NULL DEFAULT '0',
+  `publish_phone_home` tinyint(4) NOT NULL DEFAULT '0',
+  `publish_phone_mobile` tinyint(4) NOT NULL DEFAULT '0',
+  `publish_phone_work` tinyint(4) NOT NULL DEFAULT '0',
+  `background_check_date` date DEFAULT NULL,
+  `background_check_result` tinyint(4) DEFAULT NULL,
+  `heraldic_rank_id` mediumint(8) unsigned DEFAULT NULL,
+  `heraldic_title` varchar(255) DEFAULT NULL,
+  `heraldic_interests` varchar(255) DEFAULT NULL,
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`eastern_id`),
+  KEY `first_name` (`first_name`),
+  KEY `middle_name` (`middle_name`),
+  KEY `last_name` (`last_name`),
+  KEY `sca_name` (`sca_name`),
+  KEY `preferred_sca_name` (`preferred_sca_name`),
+  KEY `alternate_names` (`alternate_names`),
+  KEY `device_file_name` (`device_file_name`),
+  KEY `membership_number` (`membership_number`),
+  KEY `expiration_date` (`expiration_date`),
+  KEY `inactive` (`inactive`),
+  KEY `deceased` (`deceased`),
+  KEY `picture_file_name` (`picture_file_name`),
+  KEY `FK_eastern__branch` (`branch_id`),
+  KEY `FK_eastern__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_eastern__branch` FOREIGN KEY (`branch_id`) REFERENCES `east_branch`.`branch` (`branch_id`),
+  CONSTRAINT `FK_eastern__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7568 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `public_eastern`
+--
+
+DROP TABLE IF EXISTS `public_eastern`;
+/*!50001 DROP VIEW IF EXISTS `public_eastern`*/;
+/*!50001 CREATE TABLE `public_eastern` (
+  `eastern_id` mediumint(8) unsigned,
+  `first_name` varchar(50),
+  `middle_name` varchar(50),
+  `last_name` varchar(50),
+  `address1` varchar(100),
+  `address2` varchar(100),
+  `city` varchar(50),
+  `state` varchar(2),
+  `zip` varchar(10),
+  `country` varchar(50),
+  `email` varchar(100),
+  `alternate_email` varchar(100),
+  `phone_home` varchar(20),
+  `phone_mobile` varchar(20),
+  `phone_work` varchar(20),
+  `call_times` varchar(20),
+  `gender` char(1),
+  `deceased` tinyint(4),
+  `deceased_date` date,
+  `inactive` tinyint(4),
+  `website` varchar(100),
+  `biography` text,
+  `sca_name` varchar(255),
+  `preferred_sca_name` varchar(255),
+  `name_reg_date` date,
+  `alternate_names` varchar(255),
+  `blazon` text,
+  `device_reg_date` date,
+  `device_file_name` varchar(255),
+  `device_file_credit` varchar(255),
+  `membership_number` mediumint(8) unsigned,
+  `expiration_date` date,
+  `revoked` tinyint(4),
+  `revoked_date` date,
+  `branch_id` mediumint(8) unsigned,
+  `picture_file_name` varchar(255),
+  `picture_file_credit` varchar(255),
+  `heraldic_rank_id` mediumint(8) unsigned,
+  `heraldic_title` varchar(255),
+  `heraldic_interests` varchar(255)
+) */;
+
+--
+-- Table structure for table `user_auth`
+--
+
+DROP TABLE IF EXISTS `user_auth`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `user_auth` (
+  `user_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `eastern_id` mediumint(8) unsigned DEFAULT NULL,
+  `username` varchar(50) NOT NULL,
+  `pass_word` varchar(50) DEFAULT NULL,
+  `email` varchar(100) NOT NULL,
+  `first_name` varchar(50) DEFAULT NULL,
+  `last_name` varchar(50) DEFAULT NULL,
+  `sca_name` varchar(255) NOT NULL,
+  `account_request_date` date DEFAULT NULL,
+  `last_log` varchar(16) DEFAULT NULL,
+  `client_ip` varchar(15) DEFAULT NULL,
+  `chivalry` tinyint(4) DEFAULT '0',
+  `laurel` tinyint(4) DEFAULT '0',
+  `pelican` tinyint(4) DEFAULT '0',
+  `rose` tinyint(4) DEFAULT '0',
+  `whitescarf` tinyint(4) DEFAULT '0',
+  `pearl` tinyint(4) DEFAULT '0',
+  `dolphin` tinyint(4) DEFAULT '0',
+  `kraken` tinyint(4) DEFAULT '0',
+  `seastag` tinyint(4) DEFAULT '0',
+  `yewbow` tinyint(4) DEFAULT '0',
+  `chivalry_pend` tinyint(4) DEFAULT '0',
+  `laurel_pend` tinyint(4) DEFAULT '0',
+  `pelican_pend` tinyint(4) DEFAULT '0',
+  `rose_pend` tinyint(4) DEFAULT '0',
+  `whitescarf_pend` tinyint(4) DEFAULT '0',
+  `pearl_pend` tinyint(4) DEFAULT '0',
+  `dolphin_pend` tinyint(4) DEFAULT '0',
+  `kraken_pend` tinyint(4) DEFAULT '0',
+  `seastag_pend` tinyint(4) DEFAULT '0',
+  `yewbow_pend` tinyint(4) DEFAULT '0',
+  `chivalry_admin` tinyint(4) DEFAULT '0',
+  `laurel_admin` tinyint(4) DEFAULT '0',
+  `pelican_admin` tinyint(4) DEFAULT '0',
+  `rose_admin` tinyint(4) DEFAULT '0',
+  `whitescarf_admin` tinyint(4) DEFAULT '0',
+  `pearl_admin` tinyint(4) DEFAULT '0',
+  `dolphin_admin` tinyint(4) DEFAULT '0',
+  `kraken_admin` tinyint(4) DEFAULT '0',
+  `seastag_admin` tinyint(4) DEFAULT '0',
+  `yewbow_admin` tinyint(4) DEFAULT '0',
+  `seneschal_admin` tinyint(4) DEFAULT '0',
+  `youth_admin` tinyint(4) DEFAULT '0',
+  `exchequer_admin` tinyint(4) DEFAULT '0',
+  `herald_admin` tinyint(4) DEFAULT '0',
+  `marshal_admin` tinyint(4) DEFAULT '0',
+  `mol_admin` tinyint(4) DEFAULT '0',
+  `moas_admin` tinyint(4) DEFAULT '0',
+  `chronicler_admin` tinyint(4) DEFAULT '0',
+  `chirurgeon_admin` tinyint(4) DEFAULT '0',
+  `webminister_admin` tinyint(4) DEFAULT '0',
+  `chatelaine_admin` tinyint(4) DEFAULT '0',
+  `op_admin` tinyint(4) DEFAULT '0',
+  `backlog_admin` tinyint(4) DEFAULT '0',
+  `university_admin` tinyint(4) DEFAULT '0',
+  `award_admin` tinyint(4) DEFAULT '0',
+  `spike_admin` tinyint(4) DEFAULT '0',
+  `date_created` date DEFAULT NULL,
+  `last_updated` date DEFAULT NULL,
+  `last_updated_by` mediumint(8) unsigned DEFAULT NULL,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `UK_username` (`username`),
+  UNIQUE KEY `UK_user_auth_eastern` (`eastern_id`),
+  KEY `sca_name` (`sca_name`),
+  KEY `first_name` (`first_name`),
+  KEY `last_name` (`last_name`),
+  KEY `email` (`email`),
+  KEY `FK_user_auth__last_edited` (`last_updated_by`),
+  CONSTRAINT `FK_user_auth__eastern` FOREIGN KEY (`eastern_id`) REFERENCES `eastern` (`eastern_id`),
+  CONSTRAINT `FK_user_auth__last_edited` FOREIGN KEY (`last_updated_by`) REFERENCES `user_auth` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1523 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Current Database: `east_university`
+--
+
+USE `east_university`;
+
+--
+-- Current Database: `east_regnum`
+--
+
+USE `east_regnum`;
+
+--
+-- Current Database: `east_order`
+--
+
+USE `east_order`;
+
+--
+-- Current Database: `east_op_test`
+--
+
+USE `east_op_test`;
+
+--
+-- Final view structure for view `eastern`
+--
+
+/*!50001 DROP TABLE `eastern`*/;
+/*!50001 DROP VIEW IF EXISTS `eastern`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`67.205.0.0/255.255.192.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `eastern` AS select `east_auth_test`.`eastern`.`eastern_id` AS `eastern_id`,`east_auth_test`.`eastern`.`first_name` AS `first_name`,`east_auth_test`.`eastern`.`middle_name` AS `middle_name`,`east_auth_test`.`eastern`.`last_name` AS `last_name`,`east_auth_test`.`eastern`.`address1` AS `address1`,`east_auth_test`.`eastern`.`address2` AS `address2`,`east_auth_test`.`eastern`.`city` AS `city`,`east_auth_test`.`eastern`.`state` AS `state`,`east_auth_test`.`eastern`.`zip` AS `zip`,`east_auth_test`.`eastern`.`country` AS `country`,`east_auth_test`.`eastern`.`email` AS `email`,`east_auth_test`.`eastern`.`alternate_email` AS `alternate_email`,`east_auth_test`.`eastern`.`phone_home` AS `phone_home`,`east_auth_test`.`eastern`.`phone_mobile` AS `phone_mobile`,`east_auth_test`.`eastern`.`phone_work` AS `phone_work`,`east_auth_test`.`eastern`.`call_times` AS `call_times`,`east_auth_test`.`eastern`.`gender` AS `gender`,`east_auth_test`.`eastern`.`deceased` AS `deceased`,`east_auth_test`.`eastern`.`deceased_date` AS `deceased_date`,`east_auth_test`.`eastern`.`inactive` AS `inactive`,`east_auth_test`.`eastern`.`website` AS `website`,`east_auth_test`.`eastern`.`biography` AS `biography`,`east_auth_test`.`eastern`.`op_notes` AS `op_notes`,`east_auth_test`.`eastern`.`sca_name` AS `sca_name`,`east_auth_test`.`eastern`.`preferred_sca_name` AS `preferred_sca_name`,`east_auth_test`.`eastern`.`name_reg_date` AS `name_reg_date`,`east_auth_test`.`eastern`.`alternate_names` AS `alternate_names`,`east_auth_test`.`eastern`.`blazon` AS `blazon`,`east_auth_test`.`eastern`.`device_reg_date` AS `device_reg_date`,`east_auth_test`.`eastern`.`device_file_name` AS `device_file_name`,`east_auth_test`.`eastern`.`device_file_credit` AS `device_file_credit`,`east_auth_test`.`eastern`.`membership_number` AS `membership_number`,`east_auth_test`.`eastern`.`expiration_date` AS `expiration_date`,`east_auth_test`.`eastern`.`expiration_date_pending` AS `expiration_date_pending`,`east_auth_test`.`eastern`.`revoked` AS `revoked`,`east_auth_test`.`eastern`.`revoked_date` AS `revoked_date`,`east_auth_test`.`eastern`.`branch_id` AS `branch_id`,`east_auth_test`.`eastern`.`picture_file_name` AS `picture_file_name`,`east_auth_test`.`eastern`.`picture_file_credit` AS `picture_file_credit`,`east_auth_test`.`eastern`.`publish_name` AS `publish_name`,`east_auth_test`.`eastern`.`publish_address` AS `publish_address`,`east_auth_test`.`eastern`.`publish_email` AS `publish_email`,`east_auth_test`.`eastern`.`publish_alternate_email` AS `publish_alternate_email`,`east_auth_test`.`eastern`.`publish_phone_home` AS `publish_phone_home`,`east_auth_test`.`eastern`.`publish_phone_mobile` AS `publish_phone_mobile`,`east_auth_test`.`eastern`.`publish_phone_work` AS `publish_phone_work`,`east_auth_test`.`eastern`.`background_check_date` AS `background_check_date`,`east_auth_test`.`eastern`.`background_check_result` AS `background_check_result`,`east_auth_test`.`eastern`.`heraldic_rank_id` AS `heraldic_rank_id`,`east_auth_test`.`eastern`.`heraldic_title` AS `heraldic_title`,`east_auth_test`.`eastern`.`heraldic_interests` AS `heraldic_interests`,`east_auth_test`.`eastern`.`date_created` AS `date_created`,`east_auth_test`.`eastern`.`last_updated` AS `last_updated`,`east_auth_test`.`eastern`.`last_updated_by` AS `last_updated_by` from `east_auth_test`.`eastern` */;
+
+--
+-- Final view structure for view `branch`
+--
+
+/*!50001 DROP TABLE `branch`*/;
+/*!50001 DROP VIEW IF EXISTS `branch`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`67.205.0.0/255.255.192.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `branch` AS select `east_branch_test`.`branch`.`branch_id` AS `branch_id`,`east_branch_test`.`branch`.`branch` AS `branch`,`east_branch_test`.`branch`.`parent_branch_id` AS `parent_branch_id`,`east_branch_test`.`branch`.`branch_type_id` AS `branch_type_id`,`east_branch_test`.`branch`.`incipient` AS `incipient`,`east_branch_test`.`branch`.`ceremonial_date_founded` AS `ceremonial_date_founded`,`east_branch_test`.`branch`.`date_founded` AS `date_founded`,`east_branch_test`.`branch`.`date_dissolved` AS `date_dissolved`,`east_branch_test`.`branch`.`inactive` AS `inactive`,`east_branch_test`.`branch`.`name_reg_date` AS `name_reg_date`,`east_branch_test`.`branch`.`blazon` AS `blazon`,`east_branch_test`.`branch`.`device_reg_date` AS `device_reg_date`,`east_branch_test`.`branch`.`device_file_name` AS `device_file_name`,`east_branch_test`.`branch`.`device_file_credit` AS `device_file_credit`,`east_branch_test`.`branch`.`website` AS `website`,`east_branch_test`.`branch`.`branch_area_description` AS `branch_area_description`,`east_branch_test`.`branch`.`state_code` AS `state_code`,`east_branch_test`.`branch`.`display_order` AS `display_order`,`east_branch_test`.`branch`.`is_eastern` AS `is_eastern`,`east_branch_test`.`branch`.`notes` AS `notes`,`east_branch_test`.`branch`.`regional_group_id` AS `regional_group_id`,`east_branch_test`.`branch`.`group_id` AS `group_id`,`east_branch_test`.`branch`.`last_updated` AS `last_updated`,`east_branch_test`.`branch`.`last_updated_by` AS `last_updated_by` from `east_branch_test`.`branch` */;
+
+--
+-- Final view structure for view `branch_type`
+--
+
+/*!50001 DROP TABLE `branch_type`*/;
+/*!50001 DROP VIEW IF EXISTS `branch_type`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`67.205.0.0/255.255.192.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `branch_type` AS select `east_branch_test`.`branch_type`.`branch_type_id` AS `branch_type_id`,`east_branch_test`.`branch_type`.`branch_type` AS `branch_type`,`east_branch_test`.`branch_type`.`last_updated` AS `last_updated`,`east_branch_test`.`branch_type`.`last_updated_by` AS `last_updated_by` from `east_branch_test`.`branch_type` */;
+
+--
+-- Final view structure for view `user_auth`
+--
+
+/*!50001 DROP TABLE `user_auth`*/;
+/*!50001 DROP VIEW IF EXISTS `user_auth`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`67.205.0.0/255.255.192.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `user_auth` AS select `east_auth_test`.`user_auth`.`user_id` AS `user_id`,`east_auth_test`.`user_auth`.`eastern_id` AS `eastern_id`,`east_auth_test`.`user_auth`.`username` AS `username`,`east_auth_test`.`user_auth`.`pass_word` AS `pass_word`,`east_auth_test`.`user_auth`.`email` AS `email`,`east_auth_test`.`user_auth`.`first_name` AS `first_name`,`east_auth_test`.`user_auth`.`last_name` AS `last_name`,`east_auth_test`.`user_auth`.`sca_name` AS `sca_name`,`east_auth_test`.`user_auth`.`account_request_date` AS `account_request_date`,`east_auth_test`.`user_auth`.`last_log` AS `last_log`,`east_auth_test`.`user_auth`.`client_ip` AS `client_ip`,`east_auth_test`.`user_auth`.`chivalry` AS `chivalry`,`east_auth_test`.`user_auth`.`laurel` AS `laurel`,`east_auth_test`.`user_auth`.`pelican` AS `pelican`,`east_auth_test`.`user_auth`.`rose` AS `rose`,`east_auth_test`.`user_auth`.`whitescarf` AS `whitescarf`,`east_auth_test`.`user_auth`.`pearl` AS `pearl`,`east_auth_test`.`user_auth`.`dolphin` AS `dolphin`,`east_auth_test`.`user_auth`.`kraken` AS `kraken`,`east_auth_test`.`user_auth`.`seastag` AS `seastag`,`east_auth_test`.`user_auth`.`yewbow` AS `yewbow`,`east_auth_test`.`user_auth`.`chivalry_pend` AS `chivalry_pend`,`east_auth_test`.`user_auth`.`laurel_pend` AS `laurel_pend`,`east_auth_test`.`user_auth`.`pelican_pend` AS `pelican_pend`,`east_auth_test`.`user_auth`.`rose_pend` AS `rose_pend`,`east_auth_test`.`user_auth`.`whitescarf_pend` AS `whitescarf_pend`,`east_auth_test`.`user_auth`.`pearl_pend` AS `pearl_pend`,`east_auth_test`.`user_auth`.`dolphin_pend` AS `dolphin_pend`,`east_auth_test`.`user_auth`.`kraken_pend` AS `kraken_pend`,`east_auth_test`.`user_auth`.`seastag_pend` AS `seastag_pend`,`east_auth_test`.`user_auth`.`yewbow_pend` AS `yewbow_pend`,`east_auth_test`.`user_auth`.`chivalry_admin` AS `chivalry_admin`,`east_auth_test`.`user_auth`.`laurel_admin` AS `laurel_admin`,`east_auth_test`.`user_auth`.`pelican_admin` AS `pelican_admin`,`east_auth_test`.`user_auth`.`rose_admin` AS `rose_admin`,`east_auth_test`.`user_auth`.`whitescarf_admin` AS `whitescarf_admin`,`east_auth_test`.`user_auth`.`pearl_admin` AS `pearl_admin`,`east_auth_test`.`user_auth`.`dolphin_admin` AS `dolphin_admin`,`east_auth_test`.`user_auth`.`kraken_admin` AS `kraken_admin`,`east_auth_test`.`user_auth`.`seastag_admin` AS `seastag_admin`,`east_auth_test`.`user_auth`.`yewbow_admin` AS `yewbow_admin`,`east_auth_test`.`user_auth`.`seneschal_admin` AS `seneschal_admin`,`east_auth_test`.`user_auth`.`youth_admin` AS `youth_admin`,`east_auth_test`.`user_auth`.`exchequer_admin` AS `exchequer_admin`,`east_auth_test`.`user_auth`.`herald_admin` AS `herald_admin`,`east_auth_test`.`user_auth`.`marshal_admin` AS `marshal_admin`,`east_auth_test`.`user_auth`.`mol_admin` AS `mol_admin`,`east_auth_test`.`user_auth`.`moas_admin` AS `moas_admin`,`east_auth_test`.`user_auth`.`chronicler_admin` AS `chronicler_admin`,`east_auth_test`.`user_auth`.`chirurgeon_admin` AS `chirurgeon_admin`,`east_auth_test`.`user_auth`.`webminister_admin` AS `webminister_admin`,`east_auth_test`.`user_auth`.`chatelaine_admin` AS `chatelaine_admin`,`east_auth_test`.`user_auth`.`op_admin` AS `op_admin`,`east_auth_test`.`user_auth`.`backlog_admin` AS `backlog_admin`,`east_auth_test`.`user_auth`.`university_admin` AS `university_admin`,`east_auth_test`.`user_auth`.`award_admin` AS `award_admin`,`east_auth_test`.`user_auth`.`spike_admin` AS `spike_admin`,`east_auth_test`.`user_auth`.`date_created` AS `date_created`,`east_auth_test`.`user_auth`.`last_updated` AS `last_updated`,`east_auth_test`.`user_auth`.`last_updated_by` AS `last_updated_by` from `east_auth_test`.`user_auth` */;
+
+--
+-- Current Database: `east_spike`
+--
+
+USE `east_spike`;
+
+--
+-- Current Database: `east_branch`
+--
+
+USE `east_branch`;
+
+--
+-- Final view structure for view `eastern_barony`
+--
+
+/*!50001 DROP TABLE `eastern_barony`*/;
+/*!50001 DROP VIEW IF EXISTS `eastern_barony`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`75.119.192.0/255.255.224.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `eastern_barony` AS select `branch`.`branch_id` AS `branch_id`,`branch`.`branch` AS `branch`,`branch`.`parent_branch_id` AS `parent_branch_id`,`branch`.`branch_type_id` AS `branch_type_id`,`branch`.`incipient` AS `incipient`,`branch`.`ceremonial_date_founded` AS `ceremonial_date_founded`,`branch`.`date_founded` AS `date_founded`,`branch`.`date_dissolved` AS `date_dissolved`,`branch`.`inactive` AS `inactive`,`branch`.`name_reg_date` AS `name_reg_date`,`branch`.`blazon` AS `blazon`,`branch`.`device_reg_date` AS `device_reg_date`,`branch`.`device_file_name` AS `device_file_name`,`branch`.`device_file_credit` AS `device_file_credit`,`branch`.`website` AS `website`,`branch`.`branch_area_description` AS `branch_area_description`,`branch`.`state_code` AS `state_code`,`branch`.`display_order` AS `display_order`,`branch`.`is_eastern` AS `is_eastern`,`branch`.`notes` AS `notes`,`branch`.`regional_group_id` AS `regional_group_id`,`branch`.`group_id` AS `group_id`,`branch`.`last_updated` AS `last_updated`,`branch`.`last_updated_by` AS `last_updated_by` from `branch` where ((`branch`.`is_eastern` = 1) and (`branch`.`branch_type_id` = 3)) */;
+
+--
+-- Final view structure for view `eastern_branch`
+--
+
+/*!50001 DROP TABLE `eastern_branch`*/;
+/*!50001 DROP VIEW IF EXISTS `eastern_branch`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`75.119.192.0/255.255.224.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `eastern_branch` AS select `branch`.`branch_id` AS `branch_id`,`branch`.`branch` AS `branch`,`branch`.`parent_branch_id` AS `parent_branch_id`,`branch`.`branch_type_id` AS `branch_type_id`,`branch`.`incipient` AS `incipient`,`branch`.`ceremonial_date_founded` AS `ceremonial_date_founded`,`branch`.`date_founded` AS `date_founded`,`branch`.`date_dissolved` AS `date_dissolved`,`branch`.`inactive` AS `inactive`,`branch`.`name_reg_date` AS `name_reg_date`,`branch`.`device_reg_date` AS `device_reg_date`,`branch`.`blazon` AS `blazon`,`branch`.`device_file_name` AS `device_file_name`,`branch`.`device_file_credit` AS `device_file_credit`,`branch`.`website` AS `website`,`branch`.`branch_area_description` AS `branch_area_description`,`branch`.`state_code` AS `state_code`,`branch`.`display_order` AS `display_order`,`branch`.`notes` AS `notes`,`branch`.`last_updated` AS `last_updated`,`branch`.`last_updated_by` AS `last_updated_by` from `branch` where (`branch`.`is_eastern` = 1) */;
+
+--
+-- Final view structure for view `current_eastern_barony`
+--
+
+/*!50001 DROP TABLE `current_eastern_barony`*/;
+/*!50001 DROP VIEW IF EXISTS `current_eastern_barony`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`75.119.192.0/255.255.224.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `current_eastern_barony` AS select `eastern_barony`.`branch_id` AS `branch_id`,`eastern_barony`.`branch` AS `branch`,`eastern_barony`.`parent_branch_id` AS `parent_branch_id`,`eastern_barony`.`branch_type_id` AS `branch_type_id`,`eastern_barony`.`incipient` AS `incipient`,`eastern_barony`.`ceremonial_date_founded` AS `ceremonial_date_founded`,`eastern_barony`.`date_founded` AS `date_founded`,`eastern_barony`.`date_dissolved` AS `date_dissolved`,`eastern_barony`.`inactive` AS `inactive`,`eastern_barony`.`name_reg_date` AS `name_reg_date`,`eastern_barony`.`blazon` AS `blazon`,`eastern_barony`.`device_reg_date` AS `device_reg_date`,`eastern_barony`.`device_file_name` AS `device_file_name`,`eastern_barony`.`device_file_credit` AS `device_file_credit`,`eastern_barony`.`website` AS `website`,`eastern_barony`.`branch_area_description` AS `branch_area_description`,`eastern_barony`.`state_code` AS `state_code`,`eastern_barony`.`display_order` AS `display_order`,`eastern_barony`.`is_eastern` AS `is_eastern`,`eastern_barony`.`notes` AS `notes`,`eastern_barony`.`regional_group_id` AS `regional_group_id`,`eastern_barony`.`group_id` AS `group_id`,`eastern_barony`.`last_updated` AS `last_updated`,`eastern_barony`.`last_updated_by` AS `last_updated_by` from `eastern_barony` where ((`eastern_barony`.`inactive` = 0) and isnull(`eastern_barony`.`date_dissolved`)) */;
+
+--
+-- Final view structure for view `current_eastern_branch`
+--
+
+/*!50001 DROP TABLE `current_eastern_branch`*/;
+/*!50001 DROP VIEW IF EXISTS `current_eastern_branch`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`75.119.192.0/255.255.224.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `current_eastern_branch` AS select `eastern_branch`.`branch_id` AS `branch_id`,`eastern_branch`.`branch` AS `branch`,`eastern_branch`.`parent_branch_id` AS `parent_branch_id`,`eastern_branch`.`branch_type_id` AS `branch_type_id`,`eastern_branch`.`incipient` AS `incipient`,`eastern_branch`.`ceremonial_date_founded` AS `ceremonial_date_founded`,`eastern_branch`.`date_founded` AS `date_founded`,`eastern_branch`.`name_reg_date` AS `name_reg_date`,`eastern_branch`.`device_reg_date` AS `device_reg_date`,`eastern_branch`.`blazon` AS `blazon`,`eastern_branch`.`device_file_name` AS `device_file_name`,`eastern_branch`.`device_file_credit` AS `device_file_credit`,`eastern_branch`.`website` AS `website`,`eastern_branch`.`branch_area_description` AS `branch_area_description`,`eastern_branch`.`state_code` AS `state_code`,`eastern_branch`.`display_order` AS `display_order`,`eastern_branch`.`notes` AS `notes`,`eastern_branch`.`last_updated` AS `last_updated`,`eastern_branch`.`last_updated_by` AS `last_updated_by` from `eastern_branch` where ((`eastern_branch`.`inactive` = 0) and isnull(`eastern_branch`.`date_dissolved`)) */;
+
+--
+-- Final view structure for view `current_eastern_branch_plus_kingdom`
+--
+
+/*!50001 DROP TABLE `current_eastern_branch_plus_kingdom`*/;
+/*!50001 DROP VIEW IF EXISTS `current_eastern_branch_plus_kingdom`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`75.119.192.0/255.255.224.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `current_eastern_branch_plus_kingdom` AS select `current_branch`.`branch_id` AS `branch_id`,`current_branch`.`branch` AS `branch`,`current_branch`.`parent_branch_id` AS `parent_branch_id`,`current_branch`.`branch_type_id` AS `branch_type_id`,`current_branch`.`incipient` AS `incipient`,`current_branch`.`ceremonial_date_founded` AS `ceremonial_date_founded`,`current_branch`.`date_founded` AS `date_founded`,`current_branch`.`is_eastern` AS `is_eastern`,`current_branch`.`name_reg_date` AS `name_reg_date`,`current_branch`.`device_reg_date` AS `device_reg_date`,`current_branch`.`blazon` AS `blazon`,`current_branch`.`device_file_name` AS `device_file_name`,`current_branch`.`device_file_credit` AS `device_file_credit`,`current_branch`.`website` AS `website`,`current_branch`.`branch_area_description` AS `branch_area_description`,`current_branch`.`state_code` AS `state_code`,`current_branch`.`display_order` AS `display_order`,`current_branch`.`notes` AS `notes`,`current_branch`.`last_updated` AS `last_updated`,`current_branch`.`last_updated_by` AS `last_updated_by` from `current_branch` where ((`current_branch`.`is_eastern` = 1) or (`current_branch`.`branch_type_id` = 1)) */;
+
+--
+-- Final view structure for view `current_branch`
+--
+
+/*!50001 DROP TABLE `current_branch`*/;
+/*!50001 DROP VIEW IF EXISTS `current_branch`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`75.119.192.0/255.255.224.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `current_branch` AS select `branch`.`branch_id` AS `branch_id`,`branch`.`branch` AS `branch`,`branch`.`parent_branch_id` AS `parent_branch_id`,`branch`.`branch_type_id` AS `branch_type_id`,`branch`.`incipient` AS `incipient`,`branch`.`ceremonial_date_founded` AS `ceremonial_date_founded`,`branch`.`date_founded` AS `date_founded`,`branch`.`is_eastern` AS `is_eastern`,`branch`.`name_reg_date` AS `name_reg_date`,`branch`.`device_reg_date` AS `device_reg_date`,`branch`.`blazon` AS `blazon`,`branch`.`device_file_name` AS `device_file_name`,`branch`.`device_file_credit` AS `device_file_credit`,`branch`.`website` AS `website`,`branch`.`branch_area_description` AS `branch_area_description`,`branch`.`state_code` AS `state_code`,`branch`.`display_order` AS `display_order`,`branch`.`notes` AS `notes`,`branch`.`last_updated` AS `last_updated`,`branch`.`last_updated_by` AS `last_updated_by` from `branch` where ((`branch`.`inactive` = 0) and isnull(`branch`.`date_dissolved`)) */;
+
+--
+-- Final view structure for view `kingdom`
+--
+
+/*!50001 DROP TABLE `kingdom`*/;
+/*!50001 DROP VIEW IF EXISTS `kingdom`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`75.119.192.0/255.255.224.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `kingdom` AS select `branch`.`branch_id` AS `branch_id`,`branch`.`branch` AS `branch`,`branch`.`parent_branch_id` AS `parent_branch_id`,`branch`.`branch_type_id` AS `branch_type_id`,`branch`.`incipient` AS `incipient`,`branch`.`ceremonial_date_founded` AS `ceremonial_date_founded`,`branch`.`date_founded` AS `date_founded`,`branch`.`date_dissolved` AS `date_dissolved`,`branch`.`inactive` AS `inactive`,`branch`.`name_reg_date` AS `name_reg_date`,`branch`.`blazon` AS `blazon`,`branch`.`device_reg_date` AS `device_reg_date`,`branch`.`device_file_name` AS `device_file_name`,`branch`.`device_file_credit` AS `device_file_credit`,`branch`.`website` AS `website`,`branch`.`branch_area_description` AS `branch_area_description`,`branch`.`state_code` AS `state_code`,`branch`.`display_order` AS `display_order`,`branch`.`is_eastern` AS `is_eastern`,`branch`.`notes` AS `notes`,`branch`.`regional_group_id` AS `regional_group_id`,`branch`.`group_id` AS `group_id`,`branch`.`last_updated` AS `last_updated`,`branch`.`last_updated_by` AS `last_updated_by` from `branch` where (`branch`.`branch_type_id` = 1) */;
+
+--
+-- Current Database: `east_auth`
+--
+
+USE `east_auth`;
+
+--
+-- Final view structure for view `public_eastern`
+--
+
+/*!50001 DROP TABLE `public_eastern`*/;
+/*!50001 DROP VIEW IF EXISTS `public_eastern`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`east_admin`@`75.119.192.0/255.255.224.0` SQL SECURITY DEFINER */
+/*!50001 VIEW `public_eastern` AS select `eastern`.`eastern_id` AS `eastern_id`,if(`eastern`.`publish_name`,`eastern`.`first_name`,NULL) AS `first_name`,if(`eastern`.`publish_name`,`eastern`.`middle_name`,NULL) AS `middle_name`,if(`eastern`.`publish_name`,`eastern`.`last_name`,NULL) AS `last_name`,if(`eastern`.`publish_address`,`eastern`.`address1`,NULL) AS `address1`,if(`eastern`.`publish_address`,`eastern`.`address2`,NULL) AS `address2`,if(`eastern`.`publish_address`,`eastern`.`city`,NULL) AS `city`,if(`eastern`.`publish_address`,`eastern`.`state`,NULL) AS `state`,if(`eastern`.`publish_address`,`eastern`.`zip`,NULL) AS `zip`,if(`eastern`.`publish_address`,`eastern`.`country`,NULL) AS `country`,if(`eastern`.`publish_email`,`eastern`.`email`,NULL) AS `email`,if(`eastern`.`publish_alternate_email`,`eastern`.`alternate_email`,NULL) AS `alternate_email`,if(`eastern`.`publish_phone_home`,`eastern`.`phone_home`,NULL) AS `phone_home`,if(`eastern`.`publish_phone_mobile`,`eastern`.`phone_mobile`,NULL) AS `phone_mobile`,if(`eastern`.`publish_phone_work`,`eastern`.`phone_work`,NULL) AS `phone_work`,if((`eastern`.`publish_phone_home` or `eastern`.`publish_phone_mobile` or `eastern`.`publish_phone_work`),`eastern`.`call_times`,NULL) AS `call_times`,`eastern`.`gender` AS `gender`,`eastern`.`deceased` AS `deceased`,`eastern`.`deceased_date` AS `deceased_date`,`eastern`.`inactive` AS `inactive`,`eastern`.`website` AS `website`,`eastern`.`biography` AS `biography`,`eastern`.`sca_name` AS `sca_name`,`eastern`.`preferred_sca_name` AS `preferred_sca_name`,`eastern`.`name_reg_date` AS `name_reg_date`,`eastern`.`alternate_names` AS `alternate_names`,`eastern`.`blazon` AS `blazon`,`eastern`.`device_reg_date` AS `device_reg_date`,`eastern`.`device_file_name` AS `device_file_name`,`eastern`.`device_file_credit` AS `device_file_credit`,`eastern`.`membership_number` AS `membership_number`,`eastern`.`expiration_date` AS `expiration_date`,`eastern`.`revoked` AS `revoked`,`eastern`.`revoked_date` AS `revoked_date`,`eastern`.`branch_id` AS `branch_id`,`eastern`.`picture_file_name` AS `picture_file_name`,`eastern`.`picture_file_credit` AS `picture_file_credit`,`eastern`.`heraldic_rank_id` AS `heraldic_rank_id`,`eastern`.`heraldic_title` AS `heraldic_title`,`eastern`.`heraldic_interests` AS `heraldic_interests` from `eastern` */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2012-01-29 20:44:01

@@ -1,0 +1,6 @@
+begin;
+
+UPDATE subscriptions
+SET is_unsubscribed=1, unsubscribe_reason_id=<reason_id>, modified=NOW(), source_id=<unsub_source_id> 
+WHERE person_id=<user_id>;
+

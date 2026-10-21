@@ -1,0 +1,176 @@
+#!/bin/bash
+#TODO move most of this into functions in the utils.sh script"
+
+echo -n "This script will potentially cause serious damage if run on a system its not meant for. Are you sure? Y/N: "
+read var
+echo ""
+
+case $var in
+        y|Y) echo -n "Okay, continuing";;
+        n|N) echo "Okay, not running"
+             exit 1
+             ;;
+        *)   echo "Input not understood. Enter either Y or N"
+             exit -1
+             ;;
+esac
+
+if [[ ${EUID} -ne 0 ]]; then
+   echo "I am NOT root, bailing"
+   exit -1
+fi
+
+# read passed in $LABEL
+LABEL=${1:-""}
+
+# TODO prompt to make sure you actually want to restore... 
+# as this script is HIGHLY destructive
+
+SCRIPT_DIR=$(dirname "$0")
+source "${SCRIPT_DIR}/bitbucket.utils.sh"
+
+BACKUP_VARS_FILE=${BACKUP_VARS_FILE:-"${SCRIPT_DIR}"/bitbucket.backup.vars.sh}
+PATH=$PATH:/sbin:/usr/sbin:/usr/local/bin
+
+info $SCRIPT_DIR
+info $BITBUCKET_BACKUP_DIRECTORY
+info $BITBUCKET_DATA_DIRECTORY
+
+if [ -f "${BACKUP_VARS_FILE}" ]; then
+    source "${BACKUP_VARS_FILE}"
+    debug "Using vars file: '${BACKUP_VARS_FILE}'"
+else
+    error "'${BACKUP_VARS_FILE}' not found"
+    bail "You should create it using '${SCRIPT_DIR}/bitbucket.backup.vars.sh.example' as a template"
+fi
+
+info ${LABEL}
+
+if [[ ! -n $LABEL ]]; then
+   bail "You MUST specify a label for the backup"
+fi
+
+check_command "find"
+check_command "xfsrestore"
+
+# Check for existance of necessary files
+CURRENT_LABEL=${LABEL}
+DIR_RE="${BITBUCKET_BACKUP_DIRECTORY}/([0-9]+)"
+DUMP_RE='.*/data.xfsdump.level-([0-9]).[0-9]+'
+BACKUP_DIR_LIST=`find ${BITBUCKET_BACKUP_DIRECTORY} -maxdepth 1 -type d | sort -nr` 
+until [[ ${CURRENT_LABEL} == 'ALLDONE' ]]; do
+   if [[ -e ${BITBUCKET_BACKUP_DIRECTORY}/${CURRENT_LABEL} ]]; then
+      info "Found existing backup directory ${BITBUCKET_BACKUP_DIRECTORY}/${CURRENT_LABEL}. Skipping tarball extraction."
+   else
+      TARBALL=${BITBUCKET_BACKUP_DIRECTORY}/${CURRENT_LABEL}.tar
+      info "Looking for ${TARBALL}"
+      if [[ ! -e ${TARBALL} ]]; then
+         bail "I couldn't find ${TARBALL}"
+      else
+         info "Extracting tarball: ${TARBALL}"    
+         #explode backup tarball
+         tar -C ${BITBUCKET_BACKUP_DIRECTORY}  --strip-components=4 -xvf $TARBALL
+      fi
+   fi
+   CURRENT_DUMP=`find ${BITBUCKET_BACKUP_DIRECTORY}/${CURRENT_LABEL} -name "data.xfsdump*" -print`
+   if [[ -e ${CURRENT_DUMP} ]]; then
+      info "Found xfsdump file: ${CURRENT_DUMP}"
+      if [[ ${CURRENT_DUMP} =~ ${DUMP_RE} ]]; then
+         DUMP_LEVEL=${BASH_REMATCH[1]}
+         # pack array of dumpfiles ordered by dump level
+         DUMP_ARRAY[${DUMP_LEVEL}]=${CURRENT_DUMP}
+         # Verify if there are more files needed for restore
+         if [[ ${DUMP_LEVEL} -eq '0' ]]; then
+            CURRENT_LABEL='ALLDONE'
+            info "Found all necessary xfsdump files"
+         else
+            info "Found level ${DUMP_LEVEL} dump: ${CURRENT_DUMP}" 
+            # Find next backup dir chronologically
+            for dir in ${BACKUP_DIR_LIST}; do
+               if [[ ${dir} =~ ${DIR_RE} ]]; then
+                  # Dirs are sorted so the latest backup is listed first
+                  # Exit of first occurance of finding an earlier directory
+                  PROPOSED_LABEL=${BASH_REMATCH[1]}
+                  if [[ ${CURRENT_LABEL} -gt ${PROPOSED_LABEL} ]]; then
+                     CURRENT_LABEL=${BASH_REMATCH[1]}
+                     break
+                  fi
+               fi
+            done
+         fi 
+      else
+         info "xfsdump is of unknown dump level.  Assuming it is a level 0 dump."
+         CURRENT_LABEL='ALLDONE'
+      fi
+   else
+      bail "Unable to locate xfs dump ${CURRENT_DUMP}"
+   fi
+done
+
+# stop existing bitbucket instance
+/etc/init.d/atlbitbucket stop
+/etc/init.d/httpd stop
+
+# stop existing oracle
+sudo -u oracle ${SCRIPT_DIR}/stop_instance.sh
+
+# cleanup existing bitbucket directory
+if [[ -d  ${BITBUCKET_DATA_DIRECTORY} ]]; then
+     info "Directory  ${BITBUCKET_DATA_DIRECTORY} exists and will be moved"
+     if [[ ! -d ${BITBUCKET_DATA_DIRECTORY}.pre.${LABEL} ]]
+       then
+         debug "Directory  ${BITBUCKET_DATA_DIRECTORY}.pre.${LABEL} does not exist, which is expected"
+         mv ${BITBUCKET_DATA_DIRECTORY} ${BITBUCKET_DATA_DIRECTORY}.pre.${LABEL}
+       else
+          bail "The directory ${BITBUCKET_DATA_DIRECTORY}.pre.${LABEL} already exists, this is not expected"
+     fi
+   else
+      info "The directory ${BITBUCKET_DATA_DIRECTORY} doesn't exist."
+      info "While this is okay for doing a restore, this could indicate that BB"
+      info "is not installed on this server and this script won't be able to affect"
+      info "a full recovery"
+   fi
+
+info "removing any old database remnants in /opt/oracle/oradata"
+
+# cleanup existing oracle 
+find /opt/oracle/oradata/ -type f -exec rm -f {} \;
+
+# Restore all necessary xfsdumps in chronological order
+for DUMP_FILE in "${DUMP_ARRAY[@]}"; do
+   info "Restoring xfsdump data from ${DUMP_FILE}"
+   if [[ ${#DUMP_ARRAY[@]} -eq "1" ]]; then
+      # If there is only one file in the array, restore in simple mode
+      info "Performing simple restore"
+      xfsrestore -s servers/atlassian/bitbucket-data -f ${DUMP_FILE} /data/
+   else
+      # Multiple files to restore requires culmulative restore mode
+      # First find the dump level
+      if [[ ${DUMP_FILE} =~ ${DUMP_RE} ]]; then
+         DUMP_LEVEL=${BASH_REMATCH[1]}
+         info "Found a level ${DUMP_LEVEL} dumpfile"
+         if [[ ${DUMP_LEVEL} -eq '0' ]]; then
+            info "Processing level 0 dumpfile to kick off culmulative restore"
+            xfsrestore -s servers/atlassian/bitbucket-data -f ${DUMP_FILE} -r /data/
+         else
+            info "Processing level ${DUMP_LEVEL} dumpfile as part of culmulative restore"
+            xfsrestore -f ${DUMP_FILE} -r /data/
+         fi
+      else
+         bail "Cannot determine dump level of ${DUMP_FILE}, therefore cannot process proper xfsrestore command"
+      fi
+   fi
+done
+
+CFILE=$(find ${BITBUCKET_BACKUP_DIRECTORY}/${LABEL} -name NLCDB_cf_auto_bb_backup\*)
+DBID=$(basename $CFILE| cut -f 6 -d "_")
+
+info $CFILE
+info $DBID
+# begin recovery of DB
+
+sudo -u oracle ${SCRIPT_DIR}/restoreme.sh $CFILE $DBID
+
+# start bitbucket instance
+/etc/init.d/atlbitbucket start
+/etc/init.d/httpd start

@@ -1,0 +1,58 @@
+/* CSS definition file containing sitestyle stylesheets */
+BODY { background-color: rgb(255,255,255);}
+A:active { color: rgb(0,0,153);}
+A:link { color: rgb(0,0,153);}
+A:hover { color: rgb(0,0,0);}
+A:visited { color: rgb(102,153,153);}
+
+.caption {
+	font-size: small;
+	font-weight: normal;
+	text-align: center;
+}
+
+.titlenobg {
+   color: #cc3333;
+	font-weight : bold;
+	text-align: center;
+}
+
+.title {
+	background-color : #ddddff;
+   color: #cc3333;
+	font-weight : bold;
+	text-align: center;
+}
+
+.titleleft {
+	background-color : #ddddff;
+   color: #cc3333;
+	font-weight : bold;
+	text-align: left;
+}
+
+.titleright {
+	background-color : #ddddff;
+   color: #cc3333;
+	font-weight: bold;
+	text-align: right;
+}
+
+.data {
+	color : Black;
+	font-weight : normal;
+	text-align: left;
+}
+
+.dataright {
+	color : Black;
+	font-weight : normal;
+	text-align: right;
+}
+
+.datacenter {
+	color : Black;
+	font-weight : normal;
+	text-align: center;
+}
+

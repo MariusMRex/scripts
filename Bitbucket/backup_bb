@@ -1,0 +1,94 @@
+#!/bin/bash
+
+if [[ ${EUID} -ne 0 ]]; then
+   echo "I am NOT root, bailing"
+   exit -1
+fi
+
+LABEL=${1:-""}
+
+SCRIPT_DIR=$(dirname "$0")
+source "${SCRIPT_DIR}/bitbucket.utils.sh"
+
+BACKUP_VARS_FILE=${BACKUP_VARS_FILE:-"${SCRIPT_DIR}"/bitbucket.backup.vars.sh}
+PATH=$PATH:/sbin:/usr/sbin:/usr/local/bin
+
+info $SCRIPT_DIR
+info $BITBUCKET_BACKUP_DIRECTORY
+
+check_command "jq"
+check_command "xfsdump"
+
+if [ -f "${BACKUP_VARS_FILE}" ]; then
+    source "${BACKUP_VARS_FILE}"
+    debug "Using vars file: '${BACKUP_VARS_FILE}'"
+else
+    error "'${BACKUP_VARS_FILE}' not found"
+    bail "You should create it using '${SCRIPT_DIR}/bitbucket.backup.vars.sh.example' as a template"
+fi
+
+if [[ ! -e ${BITBUCKET_DATA_DIRECTORY}/.lock ]]; then
+      bail "There does not seem to be a running bitbucket instance on this host, bailing"
+fi
+
+if [[ ! -n $LABEL ]]; then
+   LABEL=`date +"%s"`
+   info  "Automatically setting LABEL to ${LABEL}"
+fi
+info "backup LABEL is: $LABEL"
+
+DIR="$BITBUCKET_BACKUP_DIRECTORY/${LABEL}"
+mkdir -p $DIR
+
+if [[ -d $DIR ]]; then
+   info "storing backups in $DIR"
+else
+   bail "unable to create $DIR"
+fi
+
+info "Preparing for backup"
+
+lock_bitbucket
+backup_start
+
+backup_wait
+
+info "Backing up filesystem "
+
+XFS_LEVEL=`date +%w`
+xfsdump -FT -l ${XFS_LEVEL} -L bb_master_fs -M ${LABEL} -f ${DIR}/data.xfsdump.level-${XFS_LEVEL}.${LABEL} /data && update_backup_progress 50
+
+# Verify that the incremental dump succeeded
+if [[ $? -eq 0 ]]; then
+   info "Level ${XFS_LEVEL} xfsdump successfully created"
+else
+   if [[ ${XFS_LEVEL} -eq 0 ]]; then
+      bail "Level 0 xfsdump of /data failed. Aborting, as something serious may be wrong"
+   else
+      info "Level ${XFS_LEVEL} xfsdump was unsuccessful.  Attempting to fall back to level 0 xfsdump"
+      xfsdump -FT -l 0 -L bb_master_fs -M ${LABEL} -f ${DIR}/data.xfsdump.level-0.${LABEL} /data && update_backup_progress 50
+      if [[ $? -eq 0 ]]; then
+         info "Level 0 xfsdump successfully created"
+      else
+         bail "Level 0 xfsdump of /data failed. Aborting, as something serious may be wrong"
+      fi
+   fi
+fi
+
+info "Backing up the database "
+
+chown oracle:oracle $DIR
+sudo -u oracle ${SCRIPT_DIR}/backmeup.sh $BITBUCKET_BACKUP_DIRECTORY $LABEL
+
+update_backup_progress 100
+unlock_bitbucket
+
+success "Successfully completed the backup of your BITBUCKET instance"
+
+info "Creating tarball"
+
+tar -C $BITBUCKET_BACKUP_DIRECTORY -pcvf $BITBUCKET_BACKUP_DIRECTORY/${LABEL}.tar $DIR
+success "Created tarball: $BITBUCKET_BACKUP_DIRECTORY/${LABEL}.tar"
+info "Sending data to the cold spare (bitbucket002) "
+clean_old_backups
+send_to_cold_spare_backup

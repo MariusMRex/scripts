@@ -1,0 +1,101 @@
+#!/usr/bin/perl  -w
+
+use strict;
+#use warn;
+
+my $LINE;
+my $MOUNT;
+my $FILER;
+my $VOL;
+my $MODE;
+my $RTT;
+#my $DATA_FILE = "/tmp/nfsiostat-trimmed.txt";
+my $DATA_FILE = "/tmp/nfsiostat-local.txt";
+my $FIELD_NAME;
+my %RETURN_VALUES;
+my $KEY;
+my $VALUE;
+
+# Initial data grab for field names
+system("/bin/rm -f $DATA_FILE");
+system("/usr/sbin/nfsiostat > $DATA_FILE");
+
+
+if ( defined $ARGV[0] && $ARGV[0] eq 'config' ) {
+        print <<EOF;
+graph_title NFS Write Latency (ms)
+graph_args --base 1000 -l 0
+graph_vlabel avg RTT (ms)
+graph_scale no
+graph_category nfs 
+graph_info Using nfsiostat to monitor NFS write latency in milliseconds
+EOF
+
+open(NFSIOSTAT, "$DATA_FILE");
+while(<NFSIOSTAT>) {
+        chomp;
+        $LINE = $_;
+        if($LINE =~ /(filer01|r200-01):(\/vol.*)\smounted\son\s(\/.*):/) {
+		$FILER = $1;
+		$VOL = $2;
+		$MOUNT = $3;
+		$FIELD_NAME = "$FILER:$VOL";
+		$FIELD_NAME =~ s/^[^A-Za-z_]/_/;
+		$FIELD_NAME =~ s/[^A-Za-z0-9_]/_/g;
+		print "$FIELD_NAME.label $FIELD_NAME\n";
+		print "$FIELD_NAME.type GAUGE\n";
+		print "$FIELD_NAME.min 0\n";
+        }
+}
+exit 0;
+}
+
+# Grab data again, this time with a time delay to get more current values 
+# Since we are pushing numbers to the same variables, the old (stale) data 
+# gets overwritten with the most current values in the later loops.
+system("/bin/rm -f $DATA_FILE");
+system("/usr/sbin/nfsiostat 3 2 > $DATA_FILE");
+
+open(NFSIOSTAT, "$DATA_FILE");
+while(<NFSIOSTAT>) {
+        chomp;
+        $LINE = $_;
+        if($LINE =~ /(filer01|r200-01):(\/vol.*)\smounted\son\s(\/.*):/) {
+                $FILER = $1;
+                $VOL = $2;
+                $MOUNT = $3;
+				$FIELD_NAME = "$FILER:$VOL";
+				$FIELD_NAME =~ s/^[^A-Za-z_]/_/;
+				$FIELD_NAME =~ s/[^A-Za-z0-9_]/_/g;
+                #print "New mount: Filer:$FILER vol:$VOL mount:$MOUNT\n";
+                next;
+        }
+        if($LINE =~ /read:.*/) {
+                $MODE = "read";
+                #print "---mode is read\n";
+                next;
+        }
+        if($LINE =~ /write:.*/) {
+                $MODE = "write";
+                #print "---mode is write\n";
+                next;
+        }
+        if($LINE =~ /\s(\d+\.\d{3})\s+(\d+\.\d{3})\s+(\d+\.\d{3})\s+(\d+\s\(\d+\.\d+\%\))\s+(\d+\.\d{3})\s+(\d+\.\d{3})/) {
+        #if($LINE =~ /\s(\d+\.\d{3})\s+(\d+\.\d{3})\s+(\d+\.\d{3})\s+.*/) {
+                $RTT = $5;
+                #print "$FILER : $VOL has Average $MODE RTT of $RTT\n";
+                if($MODE eq 'write') {
+					$RETURN_VALUES{$FIELD_NAME} = "$FIELD_NAME.value $RTT";
+                    #print "$FIELD_NAME.value $RTT\n";
+                    next;
+                } else {
+                        next;
+                }
+        } 
+}
+
+# Finally return data
+while (($KEY, $VALUE) = each(%RETURN_VALUES)){
+     #print $KEY.", ".$value."<br />";
+     print "$VALUE\n";
+}
