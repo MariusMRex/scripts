@@ -1,0 +1,8 @@
+#!/bin/sh
+# Set up proxy connections for shell
+# Got proxy settings from doing a `http://wpad.svale.netledger.com/proxy.pac`
+export http_proxy=http://10.1.254.65:3128/
+export https_proxy=http://10.1.254.65:3128/
+
+# Since some netsuite local IPs should be exempt from the proxy, I am not setting this in my .profile
+# Better to just call when needed.

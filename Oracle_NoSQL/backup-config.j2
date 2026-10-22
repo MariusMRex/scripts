@@ -1,0 +1,59 @@
+{% set fqdn = salt['grains.get']('fqdn') -%}
+{% set port = salt['pillar.get']('oracle-nosql:ports:registry') -%}
+{% set helper_hosts = fqdn ~ ':' ~ port|string -%}
+{% set color = grains['color'] -%}
+{% if color == 'blue' -%}
+  {% set target_pattern = 'nosql1*' -%}
+{% elif color == 'green' -%}
+  {% set target_pattern = 'nosql2*' -%}
+{% endif -%}
+{% set db_fqdn = salt['mine.get'](target_pattern, 'fqdn', tgt_type='glob') -%}
+{% set helper_hosts = [] -%}
+{% for minion, minion_fqdn in db_fqdn.items() -%}
+    {% do helper_hosts.append('"' ~ minion_fqdn ~ ':' ~ port ~ '"'|string) -%}
+{% endfor -%}
+{% set helper_hosts_string = helper_hosts | join(',') -%}
+{% set nosql_pillar = salt['pillar.get']('oracle-nosql') -%}
+{% set backup_pillar = nosql_pillar.get('backup') -%}
+{% set oci_grains = salt['grains.get']('oci') -%}
+{% set migrator_login = backup_pillar.get('migrator_login') -%}
+{% set region = oci_grains.get('canonicalRegionName') -%}
+{% set store = salt['pillar.get']('oracle-nosql:cluster:store') or 'Netsuite' -%}
+{% set bucket_basename = backup_pillar.get('oci_bucket_basename') -%}
+{% set compartment_id_name = oci_grains.get('compartment_id_name') -%}
+{# oci_grains.get was failing on fetching nested grain entries #}
+{% set region_key =  salt['grains.get']('oci:regionInfo:regionKey') -%}
+{% set molecule = salt['grains.get']('oci:definedTags:root_SDDC:Molecule') or '' -%}
+{% if compartment_id_name == 'NetSuite.Production' -%}
+   {% set bucket = compartment_id_name ~ bucket_basename ~ '-' ~ region_key -%}
+{% elif compartment_id_name == 'NetSuite.QA' -%}
+   {% set bucket = compartment_id_name ~ bucket_basename ~ '-' ~ region_key ~ '-' ~ molecule|upper -%}
+{% else -%}
+   {% set bucket = backup_pillar.get('oci_lab_bucket') -%}
+{% endif -%}
+{% set lb = "{{" -%}
+{% set rb = "}}" -%}
+{
+  "source" : {
+    "type" : "nosqldb",
+    "storeName" : "{{ store }}",
+    "helperHosts" : [{{ helper_hosts_string }}],
+    "table" : "{{ lb }} backup_table {{ rb }}",
+    "includeTTL" : false,
+    "security" : "{{ migrator_login }}",
+    "requestTimeoutMs" : 5000
+  },
+  "sink" : {
+    "type" : "object_storage_oci",
+    "format" : "json",
+    "endpoint" : "{{ region }}",
+    "namespace" : "oraclenetsuite",
+    "bucket" : "{{ bucket }}",
+    "prefix" : "{{ lb }} backup_table.replace(":", "_") {{ rb }}",
+    "chunkSize" : 32,
+    "compression" : "",
+    "useInstancePrincipal" : true
+  },
+  "abortOnError" : true,
+  "migratorVersion" : "1.6.2"
+}

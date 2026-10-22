@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd ~/chef-repo
+/usr/bin/git pull
+#/usr/local/rvm/gems/ruby-1.9.2-p320/bin/librarian-chef clean && /usr/local/rvm/gems/ruby-1.9.2-p320/bin/librarian-chef install
+/usr/local/rvm/gems/ruby-1.9.2-p320/bin/librarian-chef update
